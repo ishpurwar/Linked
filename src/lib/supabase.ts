@@ -1,8 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = "https://byqxwlhjnoqjjicqwwlu.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cXh3bGhqbm9xamppY3F3d2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTY4MDksImV4cCI6MjA2OTg3MjgwOX0.U8jCCNDPkq_jlqBydONDkYDIjT8uqd46CS3o4GxnRZU";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing Supabase environment variables");
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -21,7 +24,6 @@ export async function checkUserExists(
   walletAddress: string
 ): Promise<User | null> {
   try {
-    
     // Try the original case first
     let { data, error } = await supabase
       .from("User")
@@ -58,7 +60,6 @@ export async function createUser(
   userData: Omit<User, "id" | "created_at">
 ): Promise<User | null> {
   try {
-  
     const { data, error } = await supabase
       .from("User")
       .insert([
@@ -112,23 +113,23 @@ export async function updateUserProfile(
 export async function debugSupabase() {
   try {
     console.log("Testing Supabase connection...");
-    
+
     // Test 1: Try to get all users (without filtering)
     const { data: allUsers, error: allError } = await supabase
       .from("User")
       .select("*")
       .limit(1);
-    
+
     console.log("All users test:", { data: allUsers, error: allError });
-    
+
     // Test 2: Test the column names
     const { data: columnTest, error: columnError } = await supabase
       .from("User")
       .select("Blk_Id, profile_name, profile_id")
       .limit(1);
-      
+
     console.log("Column test:", { data: columnTest, error: columnError });
-    
+
     return { allUsers, columnTest };
   } catch (error) {
     console.error("Debug error:", error);
@@ -149,7 +150,10 @@ export interface Message {
 // Function to generate chat ID from two addresses
 export function generateChatId(address1: string, address2: string): string {
   // Sort addresses to ensure consistent chat ID regardless of order
-  const sortedAddresses = [address1.toLowerCase(), address2.toLowerCase()].sort();
+  const sortedAddresses = [
+    address1.toLowerCase(),
+    address2.toLowerCase(),
+  ].sort();
   return `${sortedAddresses[0]}_${sortedAddresses[1]}`;
 }
 
@@ -161,26 +165,28 @@ export async function sendMessage(
 ): Promise<Message | null> {
   try {
     const chatId = generateChatId(senderAddress, receiverAddress);
-    
+
     const { data, error } = await supabase
-      .from('messages')
-      .insert([{
-        chat_id: chatId,
-        sender_address: senderAddress.toLowerCase(),
-        receiver_address: receiverAddress.toLowerCase(),
-        message: messageText
-      }])
+      .from("messages")
+      .insert([
+        {
+          chat_id: chatId,
+          sender_address: senderAddress.toLowerCase(),
+          receiver_address: receiverAddress.toLowerCase(),
+          message: messageText,
+        },
+      ])
       .select()
       .single();
 
     if (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error("Error sending message:", error);
     return null;
   }
 }
@@ -192,21 +198,21 @@ export async function getMessages(
 ): Promise<Message[]> {
   try {
     const chatId = generateChatId(address1, address2);
-    
+
     const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: true });
+      .from("messages")
+      .select("*")
+      .eq("chat_id", chatId)
+      .order("created_at", { ascending: true });
 
     if (error) {
-      console.error('Error fetching messages:', error);
+      console.error("Error fetching messages:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.error('Error fetching messages:', error);
+    console.error("Error fetching messages:", error);
     return [];
   }
 }
@@ -219,17 +225,17 @@ export function subscribeToMessages(
 ) {
   const chatId = generateChatId(address1, address2);
   let lastMessageTime = new Date().toISOString();
-  
+
   // Try real-time subscription first
   const subscription = supabase
     .channel(`messages:${chatId}`)
     .on(
-      'postgres_changes',
+      "postgres_changes",
       {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `chat_id=eq.${chatId}`
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `chat_id=eq.${chatId}`,
       },
       (payload) => {
         callback(payload.new as Message);
@@ -241,21 +247,21 @@ export function subscribeToMessages(
   const pollInterval = setInterval(async () => {
     try {
       const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .gt('created_at', lastMessageTime)
-        .order('created_at', { ascending: true });
+        .from("messages")
+        .select("*")
+        .eq("chat_id", chatId)
+        .gt("created_at", lastMessageTime)
+        .order("created_at", { ascending: true });
 
       if (!error && data && data.length > 0) {
-        data.forEach(message => {
+        data.forEach((message) => {
           callback(message);
         });
         // Update last message time
         lastMessageTime = data[data.length - 1].created_at!;
       }
     } catch (error) {
-      console.error('Polling error:', error);
+      console.error("Polling error:", error);
     }
   }, 2000);
 
@@ -264,6 +270,6 @@ export function subscribeToMessages(
     unsubscribe: () => {
       subscription.unsubscribe();
       clearInterval(pollInterval);
-    }
+    },
   };
 }
