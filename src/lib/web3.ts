@@ -107,6 +107,26 @@ export class DatingAppContract {
       throw error;
     }
   }
+
+  async getAllUsers(): Promise<string[]> {
+    try {
+      const users = await this.contract.getAllUsers();
+      return users;
+    } catch (error) {
+      console.error('Error getting all users:', error);
+      throw error;
+    }
+  }
+
+  async getTotalProfiles(): Promise<number> {
+    try {
+      const total = await this.contract.totalProfiles();
+      return Number(total);
+    } catch (error) {
+      console.error('Error getting total profiles:', error);
+      throw error;
+    }
+  }
 }
 
 export const createDatingAppContract = (signer: ethers.JsonRpcSigner) => {
