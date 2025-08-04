@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useWeb3 } from "../lib/Web3Provider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { checkUserExists } from "../lib/supabase";
 import { createDatingAppContract } from "@/lib/web3";
 import {
@@ -10,15 +10,20 @@ import {
   likeTokenAddress,
   superLikeTokenAddress,
 } from "@/lib/constants";
+import ChatBox from "../components/ChatBox";
 export default function Home() {
   const { signer, account, isConnected, connectWallet } = useWeb3();
   const [userExists, setUserExists] = useState(false);
   const [contract, setContract] = useState<any>(null);
-  const [results, setResults] = useState<Record<string, any>>({});
+  const [results, setResults] = useState<Record<string, string[] | string>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [currentAddress, setCurrentAddress] = useState<string>("");
+
+  // Chat states
+  const [showChat, setShowChat] = useState(false);
+  const [chatWithAddress, setChatWithAddress] = useState<string>("");
   useEffect(() => {
-    const checkExists = async (account: any) => {
+    const checkExists = async (account: string) => {
       if (account) {
         try {
           const user = await checkUserExists(account);
@@ -32,7 +37,9 @@ export default function Home() {
       }
     };
 
-    checkExists(account);
+    if (account) {
+      checkExists(account);
+    }
   }, [account]);
   useEffect(() => {
     if (signer) {
@@ -42,30 +49,76 @@ export default function Home() {
     }
   }, [signer]);
 
-  const handleTest = async (
-    testName: string,
-    testFunction: () => Promise<any>
-  ) => {
-    if (!contract) {
-      alert("Please connect your wallet first");
-      return;
-    }
+  // Auto-load all data when contract is ready and user exists
+  useEffect(() => {
+    const loadAllData = async () => {
+      if (!contract || !userExists) return;
 
-    setLoading((prev) => ({ ...prev, [testName]: true }));
-    try {
-      const result = await testFunction();
-      setResults((prev) => ({ ...prev, [testName]: result }));
-    } catch (error) {
-      console.error(`Error in ${testName}:`, error);
-      setResults((prev) => ({
-        ...prev,
-        [testName]: `Error: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-      }));
-    } finally {
-      setLoading((prev) => ({ ...prev, [testName]: false }));
-    }
+      const functions = [
+        { name: "getMutualMatches", fn: () => contract.getMutualMatches() },
+        { name: "getOutgoingLikes", fn: () => contract.getOutgoingLikes() },
+        { name: "getIncomingLikes", fn: () => contract.getIncomingLikes() },
+        {
+          name: "getIncomingSuperLikes",
+          fn: () => contract.getIncomingSuperLikes(),
+        },
+        {
+          name: "getOutgoingSuperLikes",
+          fn: () => contract.getOutgoingSuperLikes(),
+        },
+        {
+          name: "getMutualSuperMatches",
+          fn: () => contract.getMutualSuperMatches(),
+        },
+      ];
+
+      // Load all functions in parallel
+      functions.forEach(({ name, fn }) => {
+        handleTest(name, fn);
+      });
+    };
+
+    loadAllData();
+  }, [contract, userExists]);
+
+  const handleTest = useCallback(
+    async (
+      testName: string,
+      testFunction: () => Promise<string[] | string>
+    ) => {
+      if (!contract) {
+        return;
+      }
+
+      setLoading((prev) => ({ ...prev, [testName]: true }));
+      try {
+        const result = await testFunction();
+        setResults((prev) => ({ ...prev, [testName]: result }));
+      } catch (error) {
+        console.error(`Error in ${testName}:`, error);
+        setResults((prev) => ({
+          ...prev,
+          [testName]: `Error: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+        }));
+      } finally {
+        setLoading((prev) => ({ ...prev, [testName]: false }));
+      }
+    },
+    [contract]
+  );
+
+  // Function to start chat
+  const startChat = (address: string) => {
+    setChatWithAddress(address);
+    setShowChat(true);
+  };
+
+  // Function to close chat
+  const closeChat = () => {
+    setShowChat(false);
+    setChatWithAddress("");
   };
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -483,108 +536,424 @@ export default function Home() {
             </div>
           </div>
         </div>
-        {/* Mutual Matches Section - Only for existing users */}
+        {/* Comprehensive Matches & Likes Dashboard - Only for existing users */}
         {userExists && (
-          <div className="max-w-4xl mx-auto mb-20 animate-fade-in">
+          <div className="max-w-6xl mx-auto mb-20 animate-fade-in">
             <div className="glass-purple p-8 rounded-3xl">
-              <h2 className="text-3xl font-bold gradient-text mb-6 text-center">
-                Your Mutual Matches 💕
+              <h2 className="text-4xl font-bold gradient-text mb-6 text-center">
+                Your Dating Dashboard 💕
               </h2>
-              <p className="text-gray-300 text-center mb-8">
-                People who liked you back - start a conversation!
+              <p className="text-gray-300 text-center mb-12">
+                Manage all your connections, likes, and matches in one place!
               </p>
 
-              <div className="space-y-4">
-                <button
-                  onClick={() =>
-                    handleTest("getMutualMatches", async () => {
-                      if (!contract)
-                        throw new Error("Contract not initialized");
-                      return await contract.getMutualMatches();
-                    })
-                  }
-                  className="w-full btn-purple px-6 py-3 rounded-lg font-semibold"
-                  disabled={loading.getMutualMatches}
-                >
-                  {loading.getMutualMatches
-                    ? "Loading..."
-                    : "Get Mutual Matches"}
-                </button>
-
-                {results.getMutualMatches && (
-                  <div className="mt-6">
-                    <h3 className="text-xl font-semibold text-white mb-4">
-                      Your Matches:
+              {/* Main Grid Layout */}
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* LEFT COLUMN - Matches & Incoming */}
+                <div className="space-y-8">
+                  {/* Mutual Matches */}
+                  <div className="glass p-6 rounded-2xl">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      💕 Mutual Matches
                     </h3>
-                    {Array.isArray(results.getMutualMatches) &&
-                    results.getMutualMatches.length > 0 ? (
-                      <div className="grid gap-4">
-                        {results.getMutualMatches.map(
+
+                    {loading.getMutualMatches ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                        <span className="ml-3 text-gray-300">
+                          Loading mutual matches...
+                        </span>
+                      </div>
+                    ) : results.getMutualMatches &&
+                      Array.isArray(results.getMutualMatches) &&
+                      results.getMutualMatches.length > 0 ? (
+                      <div className="space-y-3">
+                        {(results.getMutualMatches as string[]).map(
                           (matchAddress: string, index: number) => (
                             <div
                               key={index}
-                              className="glass p-4 rounded-xl flex items-center justify-between"
+                              className="glass p-3 rounded-xl flex items-center justify-between"
                             >
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                  <span className="text-xl">💕</span>
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">💕</span>
                                 </div>
                                 <div>
-                                  <p className="text-white font-semibold">
+                                  <p className="text-white font-semibold text-sm">
                                     Match #{index + 1}
                                   </p>
-                                  <p className="text-gray-300 text-sm font-mono">
+                                  <p className="text-gray-300 text-xs font-mono">
                                     {matchAddress.slice(0, 6)}...
                                     {matchAddress.slice(-4)}
                                   </p>
                                 </div>
                               </div>
                               <button
-                                onClick={() => {
-                                  // For now, we'll show an alert. You can later integrate with a chat system
-                                  alert(
-                                    `Starting chat with ${matchAddress.slice(
-                                      0,
-                                      6
-                                    )}...${matchAddress.slice(-4)}`
-                                  );
-                                  // TODO: Integrate with actual chat functionality
-                                }}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 flex items-center gap-2"
+                                onClick={() => startChat(matchAddress)}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-1 rounded-lg text-sm"
                               >
-                                <span>💬</span>
-                                Chat
+                                💬 Chat
                               </button>
                             </div>
                           )
                         )}
                       </div>
                     ) : (
-                      <div className="glass p-6 rounded-xl text-center">
-                        <div className="text-4xl mb-4">💔</div>
-                        <p className="text-gray-300">No mutual matches yet.</p>
-                        <p className="text-gray-400 text-sm mt-2">
-                          Keep swiping to find your perfect match!
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">💔</div>
+                        <p className="text-gray-300 text-sm">
+                          No mutual matches yet.
                         </p>
-                        <Link
-                          href="/match"
-                          className="inline-block mt-4 btn-purple px-6 py-2 rounded-lg"
-                        >
-                          Discover People
-                        </Link>
                       </div>
                     )}
                   </div>
-                )}
 
-                {results.getMutualMatches &&
-                  typeof results.getMutualMatches === "string" && (
-                    <div className="glass p-4 rounded-xl">
-                      <p className="text-red-400">
-                        Error: {results.getMutualMatches}
-                      </p>
+                  {/* Mutual Super Matches */}
+                  <div className="glass p-6 rounded-2xl">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      ✨ Mutual Super Matches
+                    </h3>
+
+                    {loading.getMutualSuperMatches ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                        <span className="ml-3 text-gray-300">
+                          Loading super matches...
+                        </span>
+                      </div>
+                    ) : results.getMutualSuperMatches &&
+                      Array.isArray(results.getMutualSuperMatches) &&
+                      results.getMutualSuperMatches.length > 0 ? (
+                      <div className="space-y-3">
+                        {(results.getMutualSuperMatches as string[]).map(
+                          (matchAddress: string, index: number) => (
+                            <div
+                              key={index}
+                              className="glass p-3 rounded-xl flex items-center justify-between border border-red-500/30"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">✨</span>
+                                </div>
+                                <div>
+                                  <p className="text-white font-semibold text-sm">
+                                    Super Match #{index + 1}
+                                  </p>
+                                  <p className="text-gray-300 text-xs font-mono">
+                                    {matchAddress.slice(0, 6)}...
+                                    {matchAddress.slice(-4)}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => startChat(matchAddress)}
+                                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-3 py-1 rounded-lg text-sm"
+                              >
+                                💬 Chat
+                              </button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">⭐</div>
+                        <p className="text-gray-300 text-sm">
+                          No mutual super matches yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Incoming Likes */}
+                  <div className="glass p-6 rounded-2xl">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      💙 Incoming Likes
+                    </h3>
+
+                    {loading.getIncomingLikes ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        <span className="ml-3 text-gray-300">
+                          Loading incoming likes...
+                        </span>
+                      </div>
+                    ) : results.getIncomingLikes &&
+                      Array.isArray(results.getIncomingLikes) &&
+                      results.getIncomingLikes.length > 0 ? (
+                      <div className="space-y-3">
+                        {(results.getIncomingLikes as string[]).map(
+                          (likerAddress: string, index: number) => (
+                            <div
+                              key={index}
+                              className="glass p-3 rounded-xl flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">💙</span>
+                                </div>
+                                <div>
+                                  <p className="text-white font-semibold text-sm">
+                                    Liked You #{index + 1}
+                                  </p>
+                                  <p className="text-gray-300 text-xs font-mono">
+                                    {likerAddress.slice(0, 6)}...
+                                    {likerAddress.slice(-4)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-blue-400 text-sm">
+                                💖 Liked you!
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">💌</div>
+                        <p className="text-gray-300 text-sm">
+                          No incoming likes yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Incoming Super Likes */}
+                  <div className="glass p-6 rounded-2xl">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      💖 Incoming Super Likes
+                    </h3>
+
+                    {loading.getIncomingSuperLikes ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                        <span className="ml-3 text-gray-300">
+                          Loading super likes...
+                        </span>
+                      </div>
+                    ) : results.getIncomingSuperLikes &&
+                      Array.isArray(results.getIncomingSuperLikes) &&
+                      results.getIncomingSuperLikes.length > 0 ? (
+                      <div className="space-y-3">
+                        {(results.getIncomingSuperLikes as string[]).map(
+                          (superLikerAddress: string, index: number) => (
+                            <div
+                              key={index}
+                              className="glass p-3 rounded-xl flex items-center justify-between border border-pink-500/30"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">💖</span>
+                                </div>
+                                <div>
+                                  <p className="text-white font-semibold text-sm">
+                                    Super Liked You #{index + 1}
+                                  </p>
+                                  <p className="text-gray-300 text-xs font-mono">
+                                    {superLikerAddress.slice(0, 6)}...
+                                    {superLikerAddress.slice(-4)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-pink-400 text-sm">
+                                ⭐ Super liked you!
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">🌟</div>
+                        <p className="text-gray-300 text-sm">
+                          No incoming super likes yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT COLUMN - Outgoing */}
+                <div className="space-y-8">
+                  {/* Outgoing Likes */}
+                  <div className="glass p-6 rounded-2xl">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      💚 Your Likes
+                    </h3>
+
+                    {loading.getOutgoingLikes ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                        <span className="ml-3 text-gray-300">
+                          Loading your likes...
+                        </span>
+                      </div>
+                    ) : results.getOutgoingLikes &&
+                      Array.isArray(results.getOutgoingLikes) &&
+                      results.getOutgoingLikes.length > 0 ? (
+                      <div className="space-y-3">
+                        {(results.getOutgoingLikes as string[]).map(
+                          (likedAddress: string, index: number) => (
+                            <div
+                              key={index}
+                              className="glass p-3 rounded-xl flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">💚</span>
+                                </div>
+                                <div>
+                                  <p className="text-white font-semibold text-sm">
+                                    Liked #{index + 1}
+                                  </p>
+                                  <p className="text-gray-300 text-xs font-mono">
+                                    {likedAddress.slice(0, 6)}...
+                                    {likedAddress.slice(-4)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-yellow-400 text-sm">
+                                ⏳ Waiting
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">💭</div>
+                        <p className="text-gray-300 text-sm">
+                          No outgoing likes yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Outgoing Super Likes */}
+                  <div className="glass p-6 rounded-2xl">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      ⭐ Your Super Likes
+                    </h3>
+
+                    {loading.getOutgoingSuperLikes ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                        <span className="ml-3 text-gray-300">
+                          Loading super likes...
+                        </span>
+                      </div>
+                    ) : results.getOutgoingSuperLikes &&
+                      Array.isArray(results.getOutgoingSuperLikes) &&
+                      results.getOutgoingSuperLikes.length > 0 ? (
+                      <div className="space-y-3">
+                        {(results.getOutgoingSuperLikes as string[]).map(
+                          (superLikedAddress: string, index: number) => (
+                            <div
+                              key={index}
+                              className="glass p-3 rounded-xl flex items-center justify-between border border-yellow-500/30"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">⭐</span>
+                                </div>
+                                <div>
+                                  <p className="text-white font-semibold text-sm">
+                                    Super Liked #{index + 1}
+                                  </p>
+                                  <p className="text-gray-300 text-xs font-mono">
+                                    {superLikedAddress.slice(0, 6)}...
+                                    {superLikedAddress.slice(-4)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-yellow-400 text-sm">
+                                ⏳ Waiting
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">🌟</div>
+                        <p className="text-gray-300 text-sm">
+                          No outgoing super likes yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick Stats Card */}
+                  <div className="glass p-6 rounded-2xl border border-purple-500/30">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      📊 Your Stats
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl mb-1">💕</div>
+                        <p className="text-white font-semibold text-sm">
+                          {results.getMutualMatches &&
+                          Array.isArray(results.getMutualMatches)
+                            ? (results.getMutualMatches as string[]).length
+                            : 0}
+                        </p>
+                        <p className="text-gray-400 text-xs">Matches</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl mb-1">✨</div>
+                        <p className="text-white font-semibold text-sm">
+                          {results.getMutualSuperMatches &&
+                          Array.isArray(results.getMutualSuperMatches)
+                            ? (results.getMutualSuperMatches as string[]).length
+                            : 0}
+                        </p>
+                        <p className="text-gray-400 text-xs">Super Matches</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl mb-1">💙</div>
+                        <p className="text-white font-semibold text-sm">
+                          {results.getIncomingLikes &&
+                          Array.isArray(results.getIncomingLikes)
+                            ? (results.getIncomingLikes as string[]).length
+                            : 0}
+                        </p>
+                        <p className="text-gray-400 text-xs">Liked You</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl mb-1">💚</div>
+                        <p className="text-white font-semibold text-sm">
+                          {results.getOutgoingLikes &&
+                          Array.isArray(results.getOutgoingLikes)
+                            ? (results.getOutgoingLikes as string[]).length
+                            : 0}
+                        </p>
+                        <p className="text-gray-400 text-xs">Your Likes</p>
+                      </div>
                     </div>
-                  )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions Footer */}
+              <div className="mt-12 text-center space-y-4">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Quick Actions
+                </h3>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <Link
+                    href="/match"
+                    className="btn-purple px-6 py-3 rounded-lg font-semibold"
+                  >
+                    🔍 Discover More People
+                  </Link>
+                  <Link
+                    href="/createprofile"
+                    className="glass border border-purple-500/50 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600/20 transition-all"
+                  >
+                    ✏️ Edit Profile
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -630,7 +999,59 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        {/* Demo Chat Section - For testing with your two addresses */}
+        {isConnected && account && (
+          <div className="max-w-4xl mx-auto mb-20 animate-fade-in">
+            <div className="glass-purple p-8 rounded-3xl text-center">
+              <h2 className="text-3xl font-bold gradient-text mb-6">
+                💬 Test Real-time Chat
+              </h2>
+              <p className="text-gray-300 mb-6">
+                Test the chat functionality between your two wallet addresses
+              </p>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-white font-semibold mb-2">
+                    Current Address:
+                  </p>
+                  <p className="text-gray-300 text-sm font-mono mb-4">
+                    {account.slice(0, 10)}...{account.slice(-8)}
+                  </p>
+                  <button
+                    onClick={() =>
+                      startChat("0x1A05A7a19DC00A4ce12058a6A73e8F2C53eb3248")
+                    }
+                    className="btn-purple px-6 py-2 rounded-lg"
+                  >
+                    Chat with Test Address
+                  </button>
+                </div>
+
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-white font-semibold mb-2">Test Address:</p>
+                  <p className="text-gray-300 text-sm font-mono mb-4">
+                    0x1A05A7a1...3eb3248
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    Switch to this wallet to test both sides of the conversation
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Chat Component */}
+      {showChat && account && chatWithAddress && (
+        <ChatBox
+          currentUserAddress={account}
+          otherUserAddress={chatWithAddress}
+          onClose={closeChat}
+        />
+      )}
     </div>
   );
 }
