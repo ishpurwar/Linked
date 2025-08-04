@@ -31,9 +31,9 @@ export default function ImageCarousel({
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  // const goToIndex = (index: number) => {
-  //   setCurrentIndex(index);
-  // };
+  const goToIndex = (index: number) => {
+    setCurrentIndex(index);
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -54,13 +54,13 @@ export default function ImageCarousel({
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity z-50"
             >
               ←
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity z-50"
             >
               →
             </button>
@@ -75,8 +75,8 @@ export default function ImageCarousel({
         )} */}
       </div>
 
-      {/* Dots Indicator
-      {images.length > 1 && (
+      {/* Dots Indicator */}
+      {/* {images.length > 1 && (
         <div className="flex justify-center mt-3 space-x-2">
           {images.map((_, index) => (
             <button
