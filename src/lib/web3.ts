@@ -121,6 +121,36 @@ export class DatingAppContract {
     }
   }
 
+  async getIncomingSuperLikes(): Promise<string[]> {
+    try {
+      const superLikes = await this.contract.getIncomingSuperLikes();
+      return superLikes;
+    } catch (error) {
+      console.error('Error getting incoming super likes:', error);
+      throw error;
+    }
+  }
+
+  async getOutgoingSuperLikes(): Promise<string[]> {
+    try {
+      const superLikes = await this.contract.getOutgoingSuperLikes();
+      return superLikes;
+    } catch (error) {
+      console.error('Error getting outgoing super likes:', error);
+      throw error;
+    }
+  }
+
+  async getMutualSuperMatches(): Promise<string[]> {
+    try {
+      const superMatches = await this.contract.getMutualSuperMatches();
+      return superMatches;
+    } catch (error) {
+      console.error('Error getting mutual super matches:', error);
+      throw error;
+    }
+  }
+
   async getAllUsers(): Promise<string[]> {
     try {
       const users = await this.contract.getAllUsers();
