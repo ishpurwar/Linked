@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../../lib/Web3Provider';
 import { createDatingAppContract } from '../../lib/web3';
+import ImageCarousel from '../../components/ImageCarousel';
 
 interface Profile {
   name: string;
   age: string;
   interests: string;
-  uri: string;
+  uri: string[]; // Changed to array
   owner: string;
 }
 
@@ -152,22 +153,17 @@ export default function Match() {
               className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
             >
               {/* Profile Image */}
-              <div className="h-64 bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center">
-                {user.profile?.uri ? (
-                  <img
-                    src={user.profile.uri}
+              <div className="h-64">
+                {user.profile?.uri && user.profile.uri.length > 0 ? (
+                  <ImageCarousel 
+                    images={user.profile.uri}
                     alt={user.profile.name || 'Profile'}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.parentElement!.innerHTML = `
-                        <div class="text-6xl text-gray-400">👤</div>
-                      `;
-                    }}
+                    className="h-full"
                   />
                 ) : (
-                  <div className="text-6xl text-gray-400">👤</div>
+                  <div className="h-full bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center">
+                    <div className="text-6xl text-gray-400">👤</div>
+                  </div>
                 )}
               </div>
 

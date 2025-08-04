@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../../lib/Web3Provider';
 import { createDatingAppContract, ProfileData } from '../../lib/web3';
+import MultiImageUpload from '../../components/MultiImageUpload';
 
 export default function CreateProfile() {
   const { signer, account, isConnected, connectWallet } = useWeb3();
@@ -10,7 +11,7 @@ export default function CreateProfile() {
     name: '',
     age: 0,
     interests: '',
-    uri: '',
+    uri: [],
   });
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -37,6 +38,11 @@ export default function CreateProfile() {
       return;
     }
 
+    if (formData.uri.length === 0) {
+      setError('Please upload at least one profile image');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setTxHash(null);
@@ -44,13 +50,7 @@ export default function CreateProfile() {
     try {
       const contract = createDatingAppContract(signer);
       
-      // For now, we'll use a placeholder URI. In a real app, you'd upload to IPFS
-      const profileDataWithUri = {
-        ...formData,
-        uri: formData.uri || `https://example.com/profile/${account}`,
-      };
-
-      const tx = await contract.createProfile(profileDataWithUri);
+      const tx = await contract.createProfile(formData);
       setTxHash(tx.hash);
       
       // Wait for transaction confirmation
@@ -63,7 +63,7 @@ export default function CreateProfile() {
         name: '',
         age: 0,
         interests: '',
-        uri: '',
+        uri: [],
       });
     } catch (error: any) {
       console.error('Error creating profile:', error);
@@ -163,21 +163,11 @@ export default function CreateProfile() {
           </div>
 
           <div>
-            <label htmlFor="uri" className="block text-sm font-medium text-gray-700 mb-2">
-              Profile Image URI
-            </label>
-            <input
-              type="url"
-              id="uri"
-              name="uri"
-              value={formData.uri}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-              placeholder="https://example.com/your-image.jpg (optional)"
+            <MultiImageUpload
+              images={formData.uri}
+              onImagesChange={(images) => setFormData(prev => ({ ...prev, uri: images }))}
+              maxImages={5}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Leave empty to use a default URI
-            </p>
           </div>
 
           {error && (

@@ -5,7 +5,7 @@ export interface ProfileData {
   name: string;
   age: number;
   interests: string;
-  uri: string;
+  uri: string[]; // Changed to array of image URLs
 }
 
 export class DatingAppContract {
@@ -19,11 +19,14 @@ export class DatingAppContract {
 
   async createProfile(profileData: ProfileData): Promise<ethers.TransactionResponse> {
     try {
+      // Convert array of URIs to JSON string for storage
+      const uriData = JSON.stringify(profileData.uri);
+      
       const tx = await this.contract.createProfile(
         profileData.name,
         profileData.age,
         profileData.interests,
-        profileData.uri
+        uriData
       );
       return tx;
     } catch (error) {
@@ -35,11 +38,21 @@ export class DatingAppContract {
   async getProfileByTokenId(tokenId: number) {
     try {
       const profile = await this.contract.getProfileByTokenId(tokenId);
+      
+      // Parse URI data back to array
+      let uriData: string[];
+      try {
+        uriData = JSON.parse(profile.uri);
+      } catch {
+        // Fallback for old single URI format
+        uriData = [profile.uri];
+      }
+      
       return {
         name: profile.name,
         age: profile.age.toString(),
         interests: profile.interests,
-        uri: profile.uri,
+        uri: uriData,
         owner: profile.owner,
       };
     } catch (error) {
