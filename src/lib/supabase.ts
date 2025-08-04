@@ -21,7 +21,6 @@ export async function checkUserExists(
   walletAddress: string
 ): Promise<User | null> {
   try {
-    console.log("Checking user existence for:", walletAddress);
     
     // Try the original case first
     let { data, error } = await supabase
@@ -47,7 +46,6 @@ export async function checkUserExists(
       return null;
     }
 
-    console.log("User check result:", data);
     return data;
   } catch (error) {
     console.error("Error checking user:", error);
