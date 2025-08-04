@@ -4,11 +4,21 @@ import Link from "next/link";
 import { useWeb3 } from "../lib/Web3Provider";
 import { useEffect, useState } from "react";
 import { checkUserExists } from "../lib/supabase";
+import { createDatingAppContract } from "@/lib/web3";
+import {
+  contractAddress,
+  likeTokenAddress,
+  superLikeTokenAddress,
+} from "@/lib/constants";
 export default function Home() {
-  const { account,isConnected, connectWallet } = useWeb3();
+  const { signer, account, isConnected, connectWallet } = useWeb3();
   const [userExists, setUserExists] = useState(false);
+  const [contract, setContract] = useState<any>(null);
+  const [results, setResults] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [currentAddress, setCurrentAddress] = useState<string>("");
   useEffect(() => {
-    const checkExists = async (account:any) => {
+    const checkExists = async (account: any) => {
       if (account) {
         try {
           const user = await checkUserExists(account);
@@ -24,6 +34,39 @@ export default function Home() {
 
     checkExists(account);
   }, [account]);
+  useEffect(() => {
+    if (signer) {
+      setContract(createDatingAppContract(signer));
+      // Get current user address
+      signer.getAddress().then(setCurrentAddress);
+    }
+  }, [signer]);
+
+  const handleTest = async (
+    testName: string,
+    testFunction: () => Promise<any>
+  ) => {
+    if (!contract) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
+    setLoading((prev) => ({ ...prev, [testName]: true }));
+    try {
+      const result = await testFunction();
+      setResults((prev) => ({ ...prev, [testName]: result }));
+    } catch (error) {
+      console.error(`Error in ${testName}:`, error);
+      setResults((prev) => ({
+        ...prev,
+        [testName]: `Error: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, [testName]: false }));
+    }
+  };
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Animated background elements */}
@@ -86,28 +129,32 @@ export default function Home() {
               style={{ animationDelay: "0.4s" }}
             >
               <div className="flex gap-6 items-center justify-center flex-col sm:flex-row">
-             {!userExists &&  <Link
-                  href="/createprofile"
-                  className="btn-purple text-white px-8 py-4 rounded-xl text-xl font-semibold group"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="group-hover:scale-110 transition-transform">
-                      👤
+                {!userExists && (
+                  <Link
+                    href="/createprofile"
+                    className="btn-purple text-white px-8 py-4 rounded-xl text-xl font-semibold group"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="group-hover:scale-110 transition-transform">
+                        👤
+                      </span>
+                      Create Your Profile
                     </span>
-                    Create Your Profile
-                  </span>
-                </Link>}
-               {userExists&& <Link
-                  href="/match"
-                  className="glass text-white border-2 border-purple-500/50 px-8 py-4 rounded-xl text-xl font-semibold hover:border-purple-400 hover:bg-purple-600/20 transition-all duration-300 card-hover group"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="group-hover:scale-110 transition-transform">
-                      💝
+                  </Link>
+                )}
+                {userExists && (
+                  <Link
+                    href="/match"
+                    className="glass text-white border-2 border-purple-500/50 px-8 py-4 rounded-xl text-xl font-semibold hover:border-purple-400 hover:bg-purple-600/20 transition-all duration-300 card-hover group"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="group-hover:scale-110 transition-transform">
+                        💝
+                      </span>
+                      Discover Matches
                     </span>
-                    Discover Matches
-                  </span>
-                </Link>}
+                  </Link>
+                )}
               </div>
               <div className="text-center">
                 <Link
@@ -436,7 +483,112 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {/* Mutual Matches Section - Only for existing users */}
+        {userExists && (
+          <div className="max-w-4xl mx-auto mb-20 animate-fade-in">
+            <div className="glass-purple p-8 rounded-3xl">
+              <h2 className="text-3xl font-bold gradient-text mb-6 text-center">
+                Your Mutual Matches 💕
+              </h2>
+              <p className="text-gray-300 text-center mb-8">
+                People who liked you back - start a conversation!
+              </p>
 
+              <div className="space-y-4">
+                <button
+                  onClick={() =>
+                    handleTest("getMutualMatches", async () => {
+                      if (!contract)
+                        throw new Error("Contract not initialized");
+                      return await contract.getMutualMatches();
+                    })
+                  }
+                  className="w-full btn-purple px-6 py-3 rounded-lg font-semibold"
+                  disabled={loading.getMutualMatches}
+                >
+                  {loading.getMutualMatches
+                    ? "Loading..."
+                    : "Get Mutual Matches"}
+                </button>
+
+                {results.getMutualMatches && (
+                  <div className="mt-6">
+                    <h3 className="text-xl font-semibold text-white mb-4">
+                      Your Matches:
+                    </h3>
+                    {Array.isArray(results.getMutualMatches) &&
+                    results.getMutualMatches.length > 0 ? (
+                      <div className="grid gap-4">
+                        {results.getMutualMatches.map(
+                          (matchAddress: string, index: number) => (
+                            <div
+                              key={index}
+                              className="glass p-4 rounded-xl flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                  <span className="text-xl">💕</span>
+                                </div>
+                                <div>
+                                  <p className="text-white font-semibold">
+                                    Match #{index + 1}
+                                  </p>
+                                  <p className="text-gray-300 text-sm font-mono">
+                                    {matchAddress.slice(0, 6)}...
+                                    {matchAddress.slice(-4)}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  // For now, we'll show an alert. You can later integrate with a chat system
+                                  alert(
+                                    `Starting chat with ${matchAddress.slice(
+                                      0,
+                                      6
+                                    )}...${matchAddress.slice(-4)}`
+                                  );
+                                  // TODO: Integrate with actual chat functionality
+                                }}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 flex items-center gap-2"
+                              >
+                                <span>💬</span>
+                                Chat
+                              </button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="glass p-6 rounded-xl text-center">
+                        <div className="text-4xl mb-4">💔</div>
+                        <p className="text-gray-300">No mutual matches yet.</p>
+                        <p className="text-gray-400 text-sm mt-2">
+                          Keep swiping to find your perfect match!
+                        </p>
+                        <Link
+                          href="/match"
+                          className="inline-block mt-4 btn-purple px-6 py-2 rounded-lg"
+                        >
+                          Discover People
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {results.getMutualMatches &&
+                  typeof results.getMutualMatches === "string" && (
+                    <div className="glass p-4 rounded-xl">
+                      <p className="text-red-400">
+                        Error: {results.getMutualMatches}
+                      </p>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        )}
         {/* Match Celebration Section */}
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
           <div className="glass-purple p-12 rounded-3xl">
