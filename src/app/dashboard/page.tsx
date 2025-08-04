@@ -497,170 +497,115 @@ export default function Dashboard() {
               </div>
               <div className="glass p-6 rounded-2xl">
                 <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                  💕 Mutual Matches
+                  💕 All Your Matches
                 </h3>
 
-                {loading.getMutualMatches ? (
+                {loading.getMutualMatches || loading.getMutualSuperMatches ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
                     <span className="ml-3 text-gray-300">
-                      Loading mutual matches...
+                      Loading matches...
                     </span>
                   </div>
-                ) : results.getMutualMatches &&
-                  Array.isArray(results.getMutualMatches) &&
-                  results.getMutualMatches.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(results.getMutualMatches as any[]).map(
-                      (match: any, index: number) => {
+                ) : (
+                  (() => {
+                    interface MatchItem {
+                      address: string;
+                      profile: any;
+                      type: "match" | "super_match";
+                      badge: JSX.Element;
+                    }
+
+                    const allMatches: MatchItem[] = [];
+
+                    // Add mutual matches
+                    if (
+                      results.getMutualMatches &&
+                      Array.isArray(results.getMutualMatches)
+                    ) {
+                      results.getMutualMatches.forEach((match: any) => {
                         const address =
                           typeof match === "string" ? match : match.address;
                         const profile =
                           typeof match === "object" ? match.profile : null;
 
-                        return (
-                          <ProfileCard
-                            key={index}
-                            address={address}
-                            profile={profile}
-                            index={index}
-                            variant="outgoing"
-                            statusLabel="MUTUAL MATCH"
-                            chat={true}
-                            badge={
-                              <div className="px-2 py-1 bg-red-500/80 text-white text-xs rounded-full">
-                                Match You
-                              </div>
-                            }
-                            startChat={startChat}
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="text-2xl mb-2">💔</div>
-                    <p className="text-gray-300 text-sm">
-                      No mutual matches yet.
-                    </p>
-                  </div>
-                )}
-              </div>
+                        allMatches.push({
+                          address,
+                          profile,
+                          type: "match",
+                          badge: (
+                            <div className="px-2 py-1 bg-red-500/80 text-white text-xs rounded-full">
+                              💕 Match
+                            </div>
+                          ),
+                        });
+                      });
+                    }
 
-              {/* Mutual Super Matches */}
-              <div className="glass p-6 rounded-2xl">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                  ✨ Mutual Super Matches
-                </h3>
+                    // Add mutual super matches
+                    if (
+                      results.getMutualSuperMatches &&
+                      Array.isArray(results.getMutualSuperMatches)
+                    ) {
+                      results.getMutualSuperMatches.forEach(
+                        (superMatch: any) => {
+                          const address =
+                            typeof superMatch === "string"
+                              ? superMatch
+                              : superMatch.address;
+                          const profile =
+                            typeof superMatch === "object"
+                              ? superMatch.profile
+                              : null;
 
-                {loading.getMutualSuperMatches ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
-                    <span className="ml-3 text-gray-300">
-                      Loading super matches...
-                    </span>
-                  </div>
-                ) : results.getMutualSuperMatches &&
-                  Array.isArray(results.getMutualSuperMatches) &&
-                  results.getMutualSuperMatches.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(results.getMutualSuperMatches as any[]).map(
-                      (superMatch: any, index: number) => {
-                        const address =
-                          typeof superMatch === "string"
-                            ? superMatch
-                            : superMatch.address;
-                        const profile =
-                          typeof superMatch === "object"
-                            ? superMatch.profile
-                            : null;
-
-                        return (
-                          <ProfileCard
-                            key={index}
-                            address={address}
-                            profile={profile}
-                            index={index}
-                            variant="outgoing"
-                            statusLabel="MUTUAL SUPER MATCH"
-                            chat={true}
-                            badge={
+                          allMatches.push({
+                            address,
+                            profile,
+                            type: "super_match",
+                            badge: (
                               <div className="px-2 py-1 bg-yellow-500/80 text-white text-xs rounded-full">
-                                Super Match You
+                                ⭐ Super Match
                               </div>
+                            ),
+                          });
+                        }
+                      );
+                    }
+
+                    return allMatches.length > 0 ? (
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {allMatches.map((match, index) => (
+                          <ProfileCard
+                            key={`${match.address}-${index}`}
+                            address={match.address}
+                            profile={match.profile}
+                            index={index}
+                            variant="outgoing"
+                            statusLabel={
+                              match.type === "super_match"
+                                ? "MUTUAL SUPER MATCH"
+                                : "MUTUAL MATCH"
                             }
+                            chat={true}
+                            badge={match.badge}
                             startChat={startChat}
                           />
-                        );
-                      }
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="text-2xl mb-2">⭐</div>
-                    <p className="text-gray-300 text-sm">
-                      No mutual super matches yet.
-                    </p>
-                  </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-2xl mb-2">💔</div>
+                        <p className="text-gray-300 text-sm">
+                          No matches yet. Keep swiping to find your perfect
+                          match!
+                        </p>
+                      </div>
+                    );
+                  })()
                 )}
               </div>
 
               {/* Incoming Likes */}
-              <div className="glass p-6 rounded-2xl">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                  💙 Incoming Likes
-                </h3>
-
-                {loading.getIncomingLikes ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    <span className="ml-3 text-gray-300">
-                      Loading incoming likes...
-                    </span>
-                  </div>
-                ) : results.getIncomingLikes &&
-                  Array.isArray(results.getIncomingLikes) &&
-                  results.getIncomingLikes.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(results.getIncomingLikes as any[]).map(
-                      (incomingLike: any, index: number) => {
-                        const address =
-                          typeof incomingLike === "string"
-                            ? incomingLike
-                            : incomingLike.address;
-                        const profile =
-                          typeof incomingLike === "object"
-                            ? incomingLike.profile
-                            : null;
-
-                        return (
-                          <ProfileCard
-                            key={index}
-                            address={address}
-                            profile={profile}
-                            index={index}
-                            variant="incoming"
-                            statusLabel="LIKED YOU"
-                            badge={
-                              <div className="px-2 py-1 bg-blue-500/80 text-white text-xs rounded-full">
-                                Liked You
-                              </div>
-                            }
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="text-2xl mb-2">💌</div>
-                    <p className="text-gray-300 text-sm">
-                      No incoming likes yet.
-                    </p>
-                  </div>
-                )}
-              </div>
 
               {/* Incoming Super Likes */}
               <div className="glass p-6 rounded-2xl">
@@ -717,120 +662,6 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-
-              {/* Outgoing Likes */}
-              <div className="glass p-6 rounded-2xl">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                  💚 Your Likes
-                </h3>
-
-                {loading.getOutgoingLikes ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                    <span className="ml-3 text-gray-300">
-                      Loading your likes...
-                    </span>
-                  </div>
-                ) : results.getOutgoingLikes &&
-                  Array.isArray(results.getOutgoingLikes) &&
-                  results.getOutgoingLikes.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {results.getOutgoingLikes.map(
-                      (outgoingLike: any, index: number) => {
-                        const address =
-                          typeof outgoingLike === "string"
-                            ? outgoingLike
-                            : outgoingLike.address;
-                        const profile =
-                          typeof outgoingLike === "object"
-                            ? outgoingLike.profile
-                            : null;
-
-                        return (
-                          <ProfileCard
-                            key={index}
-                            address={address}
-                            profile={profile}
-                            index={index}
-                            variant="outgoing"
-                            statusLabel="YOU LIKED"
-                            badge={
-                              <div className="px-2 py-1 bg-green-500/80 text-white text-xs rounded-full">
-                                Liked
-                              </div>
-                            }
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="text-2xl mb-2">💭</div>
-                    <p className="text-gray-300 text-sm">
-                      No outgoing likes yet.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Outgoing Super Likes */}
-              <div className="glass p-6 rounded-2xl">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                  ⭐ Your Super Likes
-                </h3>
-
-                {loading.getOutgoingSuperLikes ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                    <span className="ml-3 text-gray-300">
-                      Loading super likes...
-                    </span>
-                  </div>
-                ) : results.getOutgoingSuperLikes &&
-                  Array.isArray(results.getOutgoingSuperLikes) &&
-                  results.getOutgoingSuperLikes.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(results.getOutgoingSuperLikes as any[]).map(
-                      (outgoingLike: any, index: number) => {
-                        const address =
-                          typeof outgoingLike === "string"
-                            ? outgoingLike
-                            : outgoingLike.address;
-                        const profile =
-                          typeof outgoingLike === "object"
-                            ? outgoingLike.profile
-                            : null;
-
-                        return (
-                          <ProfileCard
-                            key={index}
-                            address={address}
-                            profile={profile}
-                            index={index}
-                            variant="outgoing"
-                            statusLabel="YOU SUPER LIKED"
-                            badge={
-                              <div className="px-2 py-1 bg-yellow-500/80 text-white text-xs rounded-full">
-                                Super Liked
-                              </div>
-                            }
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="text-2xl mb-2">🌟</div>
-                    <p className="text-gray-300 text-sm">
-                      No outgoing super likes yet.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Quick Stats Card */}
             </div>
           </div>
 

@@ -142,29 +142,21 @@ export default function Home() {
                         Your Dashboard
                       </span>
                     </Link>
-                    <Link
-                      href="/chat"
-                      className="glass text-white border-2 border-purple-500/50 px-8 py-4 rounded-xl text-xl font-semibold hover:border-purple-400 hover:bg-purple-600/20 transition-all duration-300 card-hover group"
-                    >
+               
+                  </>
+                )}
+              </div>
+              <div className="text-center">
+                <Link
+                  href="/chat"
+                  className="inline-flex items-center gap-2 glass-purple text-purple-300 px-8 py-4 rounded-lg text-xl hover:text-white transition-colors duration-300 group"
+                >
                       <span className="flex items-center gap-2">
                         <span className="group-hover:scale-110 transition-transform">
                           💬
                         </span>
                         Chat Room
                       </span>
-                    </Link>
-                  </>
-                )}
-              </div>
-              <div className="text-center">
-                <Link
-                  href="/test"
-                  className="inline-flex items-center gap-2 glass-purple text-purple-300 px-6 py-3 rounded-lg text-sm hover:text-white transition-colors duration-300 group"
-                >
-                  <span className="group-hover:scale-110 transition-transform">
-                    🧪
-                  </span>
-                  Test Smart Contract Functions
                 </Link>
               </div>
 

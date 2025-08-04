@@ -47,7 +47,7 @@ export default function Match() {
       console.error("Error fetching token balances:", error);
     }
   };
-//hi
+
   const fetchAllUsers = async () => {
     if (!signer) return;
 
@@ -316,39 +316,37 @@ export default function Match() {
           </p>
         </div>
 
-        {/* Token Balance Display */}
-        <div className="glass-purple rounded-2xl p-6 mb-8 max-w-md mx-auto animate-slide-up card-hover">
-          <h3 className="text-lg font-semibold text-white mb-4 text-center">
-            Your Token Balance
-          </h3>
-          <div className="flex justify-between items-center space-x-6">
-            <div className="flex-1 text-center">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <span className="text-3xl animate-float">💕</span>
-                <span className="text-sm text-purple-300">Like Tokens</span>
+          <div className="lg:hidden">
+          {users.length > 0 && (
+            <div className="glass-purple rounded-2xl p-4 mb-8 max-w-md mx-auto animate-slide-up card-hover">
+              <div className="flex justify-between items-center space-x-6">
+                <div className="flex-1 text-center">
+                  <div className="flex items-center justify-center space-x-1 mb-2">
+                    <span className="text-2xl">💕</span>
+                    <span className="text-xs text-purple-300">Like</span>
+                  </div>
+                  <p className="text-xl font-bold text-pink-400">
+                    {parseFloat(likeTokenBalance).toFixed(1)}
+                  </p>
+                </div>
+                <div className="w-px h-8 bg-purple-500/30"></div>
+                <div className="flex-1 text-center">
+                  <div className="flex items-center justify-center space-x-1 mb-2">
+                    <span
+                      className="text-2xl"
+                      style={{ animationDelay: "1s" }}
+                    >
+                      ⭐
+                    </span>
+                    <span className="text-xs text-purple-300">Super</span>
+                  </div>
+                  <p className="text-xl font-bold text-purple-400">
+                    {parseFloat(superLikeTokenBalance).toFixed(1)}
+                  </p>
+                </div>
               </div>
-              <p className="text-2xl font-bold text-pink-400">
-                {parseFloat(likeTokenBalance).toFixed(1)}
-              </p>
             </div>
-            <div className="w-px h-12 bg-purple-500/30"></div>
-            <div className="flex-1 text-center">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <span
-                  className="text-3xl animate-float"
-                  style={{ animationDelay: "1s" }}
-                >
-                  ⭐
-                </span>
-                <span className="text-sm text-purple-300">
-                  Super Like Tokens
-                </span>
-              </div>
-              <p className="text-2xl font-bold text-purple-400">
-                {parseFloat(superLikeTokenBalance).toFixed(1)}
-              </p>
-            </div>
-          </div>
+          )}
         </div>
 
         {isLoading && (
@@ -395,26 +393,26 @@ export default function Match() {
 
         {/* Tinder-style single card display */}
         {users.length > 0 && (
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-sm mx-auto">
-              {/* Progress indicator */}
-              <div className="mb-6 flex justify-center">
-                <div className="flex space-x-2">
-                  {users.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === currentUserIndex
-                          ? "bg-purple-500 w-6"
-                          : index < currentUserIndex
-                          ? "bg-purple-300"
-                          : "bg-gray-600"
-                      }`}
-                    />
-                  ))}
+          <div className="flex items-center justify-center gap-8 max-w-7xl mx-auto">
+            {/* Left Token Balance - Like Tokens */}
+            <div className="hidden lg:block">
+              <div className="glass-purple rounded-2xl p-6 animate-slide-up card-hover">
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    <span className="text-4xl animate-float">💕</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-purple-300 mb-2">
+                    Like Tokens
+                  </h3>
+                  <p className="text-3xl font-bold text-pink-400">
+                    {parseFloat(likeTokenBalance).toFixed(1)}
+                  </p>
                 </div>
               </div>
+            </div>
 
+            {/* Center Card */}
+            <div className="relative w-full max-w-sm mx-auto">
               {/* Current user card */}
               {getCurrentUser() && (
                 <div className="glass-purple rounded-3xl overflow-hidden card-hover animate-scale-in relative">
@@ -568,15 +566,32 @@ export default function Match() {
                 </div>
               )}
 
-              {/* User counter */}
-              <div className="text-center mt-6">
-                <p className="text-gray-400 text-sm">
-                  {currentUserIndex + 1} of {users.length} profiles
-                </p>
+             
+            </div>
+
+            {/* Right Token Balance - Super Like Tokens */}
+            <div className="hidden lg:block">
+              <div className="glass-purple rounded-2xl p-6 animate-slide-up card-hover">
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    <span
+                      className="text-4xl animate-float"
+                      style={{ animationDelay: "1s" }}
+                    >
+                      ⭐
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-purple-300 mb-2">
+                    Super Like Tokens
+                  </h3>
+                  <p className="text-3xl font-bold text-purple-400">
+                    {parseFloat(superLikeTokenBalance).toFixed(1)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        )}
+        )}      
 
         {/* End of profiles message */}
         {users.length > 0 && currentUserIndex >= users.length - 1 && (
