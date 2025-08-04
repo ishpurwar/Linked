@@ -794,8 +794,7 @@ export default function Home() {
                   ) : results.getMutualMatches &&
                     Array.isArray(results.getMutualMatches) &&
                     results.getMutualMatches.length > 0 ? (
-                    <div className="space-y-3">
-                     
+                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                       
                       {(results.getMutualMatches as any[]).map(
                         (incomingSuperLike: any, index: number) => {
@@ -822,6 +821,7 @@ export default function Home() {
                                    Match You
                                 </div>
                               }
+                              startChat={startChat}
                             />
                           );
                         }
@@ -854,7 +854,7 @@ export default function Home() {
                   ) : results.getMutualSuperMatches &&
                     Array.isArray(results.getMutualSuperMatches) &&
                     results.getMutualSuperMatches.length > 0 ? (
-                    <div className="space-y-3">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {(results.getMutualSuperMatches as any[]).map(
                         (incomingSuperLike: any, index: number) => {
                           const address =
@@ -911,7 +911,7 @@ export default function Home() {
                   ) : results.getIncomingLikes &&
                     Array.isArray(results.getIncomingLikes) &&
                     results.getIncomingLikes.length > 0 ? (
-                    <div className="space-y-3">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {(results.getIncomingLikes as any[]).map(
                         (incomingSuperLike: any, index: number) => {
                           const address =
@@ -967,7 +967,7 @@ export default function Home() {
                   ) : results.getIncomingSuperLikes &&
                     Array.isArray(results.getIncomingSuperLikes) &&
                     results.getIncomingSuperLikes.length > 0 ? (
-                    <div className="space-y-3">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {(results.getIncomingSuperLikes as any[]).map(
                         (incomingSuperLike: any, index: number) => {
                           const address =
@@ -1081,7 +1081,7 @@ export default function Home() {
                   ) : results.getOutgoingSuperLikes &&
                     Array.isArray(results.getOutgoingSuperLikes) &&
                     results.getOutgoingSuperLikes.length > 0 ? (
-                    <div className="space-y-3">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {(results.getOutgoingSuperLikes as any[]).map(
                         (outgoingLike: any, index: number) => {
                           const address =

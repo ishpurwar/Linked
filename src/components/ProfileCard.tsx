@@ -19,7 +19,8 @@ interface ProfileCardProps {
   badge?: React.ReactNode;
   statusLabel?: string;
   className?: string;
-    chat?: boolean; // New prop to indicate if this is for chat
+    chat?: boolean; 
+    startChat?: (address: string) => void;  
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({
@@ -31,7 +32,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   badge,
   statusLabel,
   className = '',
-  chat= false // New prop to indicate if this is for chat
+  chat= false, // New prop to indicate if this is for chat
+  startChat
 }) => {
   const getVariantStyles = () => {
     switch (variant) {
@@ -75,6 +77,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         return 'from-yellow-500 to-orange-500';
       default:
         return 'from-purple-500 to-pink-500';
+    }
+  };
+    const handleChatClick = () => {
+    if (startChat) {
+      startChat(address); // Pass the address prop instead of profile?.address
     }
   };
 
@@ -121,7 +128,12 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             {address.slice(0, 6)}...{address.slice(-4)}
           </p>
         </div>
-      {chat && <div className='absolute bottom-0 mb-4 left-1/2  text-2xl flex items-center justify-center rounded-full h-10 w-10 -translate-x-1/2 bg-yellow-500 hover:bg-yellow-400' >💬</div>}
+      {chat &&  <div 
+            className='absolute bottom-0 mb-4 left-1/2 text-2xl flex items-center justify-center rounded-full h-10 w-10 -translate-x-1/2 bg-yellow-500 hover:bg-yellow-400 cursor-pointer transition-colors duration-200' 
+            onClick={handleChatClick}
+          >
+            💬
+          </div>}
       </div>
     </div>
   );
