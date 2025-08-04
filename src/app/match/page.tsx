@@ -230,15 +230,21 @@ export default function Match() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-          <h1 className="text-2xl font-bold mb-4 text-gray-800">Connect Your Wallet</h1>
-          <p className="text-gray-600 mb-6">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute bottom-1/3 right-1/3 w-96 h-96 bg-purple-800/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+        </div>
+        
+        <div className="relative z-10 glass-purple p-8 rounded-2xl text-center max-w-md mx-4 animate-scale-in">
+          <h1 className="text-3xl font-bold mb-4 gradient-text">Connect Your Wallet</h1>
+          <p className="text-gray-300 mb-6">
             Please connect your wallet to discover matches
           </p>
           <button
             onClick={connectWallet}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-colors"
+            className="btn-purple text-white px-6 py-3 rounded-lg animate-glow"
           >
             Connect Wallet
           </button>
@@ -248,73 +254,85 @@ export default function Match() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            Discover Matches
+    <div className="min-h-screen relative overflow-hidden py-8">
+      {/* Romantic background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-800/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute top-3/4 left-1/3 w-48 h-48 bg-pink-500/10 rounded-full blur-2xl animate-pulse-slow" style={{ animationDelay: '3s' }}></div>
+      </div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4">
+        <div className="text-center mb-8 animate-fade-in">
+          <h1 className="text-5xl font-bold gradient-text mb-4">
+            💕 Discover Matches
           </h1>
-          <p className="text-gray-600">
-            Browse profiles and find your perfect match
+          <p className="text-gray-300 text-lg">
+            Browse profiles and find your perfect match on the blockchain
           </p>
         </div>
 
         {/* Token Balance Display */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6 max-w-md mx-auto">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">Your Token Balance</h3>
-          <div className="flex justify-between items-center space-x-4">
+        <div className="glass-purple rounded-2xl p-6 mb-8 max-w-md mx-auto animate-slide-up card-hover">
+          <h3 className="text-lg font-semibold text-white mb-4 text-center">Your Token Balance</h3>
+          <div className="flex justify-between items-center space-x-6">
             <div className="flex-1 text-center">
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-2xl">💕</span>
-                <span className="text-sm text-gray-600">Like Tokens</span>
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <span className="text-3xl animate-float">💕</span>
+                <span className="text-sm text-purple-300">Like Tokens</span>
               </div>
-              <p className="text-xl font-bold text-pink-600">{parseFloat(likeTokenBalance).toFixed(1)}</p>
+              <p className="text-2xl font-bold text-pink-400">{parseFloat(likeTokenBalance).toFixed(1)}</p>
             </div>
+            <div className="w-px h-12 bg-purple-500/30"></div>
             <div className="flex-1 text-center">
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-2xl">⭐</span>
-                <span className="text-sm text-gray-600">Super Like Tokens</span>
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <span className="text-3xl animate-float" style={{ animationDelay: '1s' }}>⭐</span>
+                <span className="text-sm text-purple-300">Super Like Tokens</span>
               </div>
-              <p className="text-xl font-bold text-purple-600">{parseFloat(superLikeTokenBalance).toFixed(1)}</p>
+              <p className="text-2xl font-bold text-purple-400">{parseFloat(superLikeTokenBalance).toFixed(1)}</p>
             </div>
           </div>
         </div>
 
         {isLoading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
-            <span className="ml-3 text-gray-600">Loading profiles...</span>
+          <div className="flex justify-center items-center py-12 animate-fade-in">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+            </div>
+            <span className="ml-4 text-gray-300 text-lg">Finding your perfect matches...</span>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6 max-w-2xl mx-auto">
-            <p className="text-red-600 text-center">{error}</p>
+          <div className="glass border border-red-500/50 rounded-2xl p-6 mb-8 max-w-2xl mx-auto animate-scale-in">
+            <p className="text-red-400 text-center text-lg">{error}</p>
             <button
               onClick={fetchAllUsers}
-              className="mt-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors block mx-auto"
+              className="mt-4 btn-purple text-white px-6 py-3 rounded-lg mx-auto block"
             >
-              Retry
+              Try Again
             </button>
           </div>
         )}
 
-        {!isLoading && users.length === 0 && !error && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">💔</div>
-            <p className="text-gray-600 text-lg">No other users found on the platform yet.</p>
-            <p className="text-gray-500 mt-2">Be the first to create connections!</p>
+        {users.length === 0 && !isLoading && !error && (
+          <div className="text-center py-12 animate-fade-in">
+            <div className="text-6xl mb-6 animate-float">💔</div>
+            <p className="text-gray-300 text-xl mb-2">No other users found on the platform yet.</p>
+            <p className="text-purple-400 mt-2">Be the first to create connections!</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.map((user, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+          {users.map((user) => (
             <div
               key={user.address}
-              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              className="glass-purple rounded-2xl overflow-hidden card-hover animate-scale-in relative"
             >
               {/* Profile Image */}
-              <div className="h-64">
+              <div className="h-[450px] overflow-hidden relative">
                 {user.profile?.uri && user.profile.uri.length > 0 ? (
                   <ImageCarousel 
                     images={user.profile.uri}
@@ -322,111 +340,130 @@ export default function Match() {
                     className="h-full"
                   />
                 ) : (
-                  <div className="h-full bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center">
-                    <div className="text-6xl text-gray-400">👤</div>
+                  <div className="h-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center">
+                    <div className="text-8xl text-purple-300 animate-pulse-slow">👤</div>
                   </div>
                 )}
-              </div>
-
-              {/* Profile Info */}
-              <div className="p-6">
-                {user.profile ? (
-                  <>
-                    <div className="mb-4">
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">
-                        {user.profile.name}
-                      </h3>
-                      <p className="text-gray-600">
-                        Age: {user.profile.age}
-                      </p>
-                    </div>
-
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                        Interests:
-                      </h4>
-                      <div className="flex flex-wrap gap-1">
-                        {user.profile.interests.split(',').map((interest, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full"
-                          >
-                            {interest.trim()}
-                          </span>
-                        ))}
+                
+                {/* Gradient overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60"></div>
+                
+                {/* Profile Info - Overlaying at the top */}
+                <div className="absolute top-0 left-0 right-0 p-6 z-10">
+                  {user.profile ? (
+                    <>
+                      <div className="mb-4">
+                        <h3 className="text-2xl font-bold text-white mb-1 gradient-text">
+                          {user.profile.name}
+                        </h3>
+                        <p className="text-gray-300 text-lg">
+                          Age: {user.profile.age}
+                        </p>
                       </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="mb-4">
-                    <h3 className="text-xl font-bold text-gray-800 mb-1">
-                      Unknown User
-                    </h3>
-                    <p className="text-gray-500 text-sm">Profile data unavailable</p>
-                  </div>
-                )}
 
-                {/* Address (truncated) */}
-                <div className="mb-4">
-                  <p className="text-xs text-gray-500">
-                    {user.address.slice(0, 6)}...{user.address.slice(-4)}
-                  </p>
+                      <div className="mb-4">
+                        <h4 className="text-sm font-semibold text-purple-300 mb-3">
+                          💫 Interests:
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {user.profile.interests.split(',').map((interest, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1 glass border border-purple-400/30 text-purple-200 text-sm rounded-full hover:bg-purple-500/20 transition-colors"
+                            >
+                              {interest.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="mb-4">
+                      <h3 className="text-xl font-bold text-white mb-1">
+                        Unknown User
+                      </h3>
+                      <p className="text-gray-400 text-sm">Profile data unavailable</p>
+                    </div>
+                  )}
+
+                  {/* Address (truncated) */}
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 font-mono">
+                      {user.address.slice(0, 6)}...{user.address.slice(-4)}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex space-x-3">
+                {/* Action Buttons - Overlaying at the bottom */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                  <div className="flex justify-between items-center space-x-4">
+                  {/* Cross button (left) */}
+                  <button
+                    onClick={() => fetchAllUsers()} // Refreshes to show new profiles
+                    disabled={likeLoading[user.address] || superLikeLoading[user.address]}
+                    className="w-14 h-14 bg-gradient-to-r from-gray-500 to-gray-600 rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 hover:shadow-lg hover:shadow-gray-500/25 transition-all duration-300"
+                    aria-label="Skip"
+                  >
+                    <span className="text-2xl text-white">✕</span>
+                  </button>
+                  
+                  {/* Like button (middle) */}
                   <button
                     onClick={() => handleLike(user.address)}
                     disabled={likeLoading[user.address] || superLikeLoading[user.address]}
-                    className="flex-1 bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-16 h-16 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300"
+                    aria-label="Like"
                   >
                     {likeLoading[user.address] ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Sending...</span>
-                      </>
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      <>
-                        <span>❤️</span>
-                        <span>Like</span>
-                      </>
+                    <span className="text-2xl animate-pulse">❤️</span>
                     )}
                   </button>
+                  
+                  {/* Super Like button (right) */}
                   <button
                     onClick={() => handleSuperLike(user.address)}
                     disabled={likeLoading[user.address] || superLikeLoading[user.address]}
-                    className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-2 px-4 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-14 h-14 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 hover:shadow-lg hover:shadow-yellow-500/25 transition-all duration-300"
+                    aria-label="Super Like"
                   >
                     {superLikeLoading[user.address] ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Sending...</span>
-                      </>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      <>
-                        <span>⭐</span>
-                        <span>Super</span>
-                      </>
+                    <span className="text-xl animate-pulse" style={{ animationDelay: '0.5s' }}>⭐</span>
                     )}
                   </button>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
+
         </div>
 
         {/* Refresh Button */}
         {users.length > 0 && (
-          <div className="text-center mt-8">
+          <div className="text-center mt-12 animate-fade-in">
             <button
               onClick={fetchAllUsers}
               disabled={isLoading}
-              className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="glass-purple text-purple-300 px-8 py-4 rounded-xl hover:text-white transition-all duration-300 disabled:opacity-50 border border-purple-500/30 hover:border-purple-400 font-semibold"
             >
-              {isLoading ? 'Refreshing...' : 'Refresh Profiles'}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-purple-300/30 border-t-purple-300 rounded-full animate-spin"></div>
+                  Refreshing...
+                </span>
+              ) : (
+                '🔄 Refresh Profiles'
+              )}
             </button>
           </div>
         )}
+      
+
+      
       </div>
     </div>
   );

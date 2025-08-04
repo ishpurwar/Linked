@@ -17,7 +17,7 @@ export default function ImageCarousel({
 
   if (!images || images.length === 0) {
     return (
-      <div className={`w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center ${className}`}>
+      <div className={`w-full h-full bg-gray-200 rounded-lg flex items-center justify-center ${className}`}>
         <div className="text-gray-500">No images available</div>
       </div>
     );
@@ -31,14 +31,14 @@ export default function ImageCarousel({
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const goToIndex = (index: number) => {
-    setCurrentIndex(index);
-  };
+  // const goToIndex = (index: number) => {
+  //   setCurrentIndex(index);
+  // };
 
   return (
     <div className={`relative ${className}`}>
       {/* Main Image */}
-      <div className="relative w-full h-64 rounded-lg overflow-hidden">
+      <div className="relative w-full h-full rounded-lg overflow-hidden">
         <img
           src={images[currentIndex]}
           alt={`${alt} ${currentIndex + 1}`}
@@ -68,14 +68,14 @@ export default function ImageCarousel({
         )}
 
         {/* Image Counter */}
-        {images.length > 1 && (
+        {/* {images.length > 1 && (
           <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
             {currentIndex + 1} / {images.length}
           </div>
-        )}
+        )} */}
       </div>
 
-      {/* Dots Indicator */}
+      {/* Dots Indicator
       {images.length > 1 && (
         <div className="flex justify-center mt-3 space-x-2">
           {images.map((_, index) => (
@@ -88,7 +88,7 @@ export default function ImageCarousel({
             />
           ))}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
