@@ -12,6 +12,7 @@ export default function Navigation() {
     { href: '/', label: 'Home', icon: '🏠' },
     { href: '/createprofile', label: 'Create Profile', icon: '👤' },
     { href: '/match', label: 'Discover', icon: '💝' },
+    { href: '/test', label: 'Test Functions', icon: '🧪' },
   ];
 
   return (

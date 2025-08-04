@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { contractAbi, contractAddress } from './constants';
+import { contractAbi, contractAddress, erc20Abi, likeTokenAddress, superLikeTokenAddress } from './constants';
 
 export interface ProfileData {
   name: string;
@@ -11,10 +11,14 @@ export interface ProfileData {
 export class DatingAppContract {
   private contract: ethers.Contract;
   private signer: ethers.JsonRpcSigner;
+  private likeTokenContract: ethers.Contract;
+  private superLikeTokenContract: ethers.Contract;
 
   constructor(signer: ethers.JsonRpcSigner) {
     this.signer = signer;
     this.contract = new ethers.Contract(contractAddress, contractAbi, signer);
+    this.likeTokenContract = new ethers.Contract(likeTokenAddress, erc20Abi, signer);
+    this.superLikeTokenContract = new ethers.Contract(superLikeTokenAddress, erc20Abi, signer);
   }
 
   async createProfile(profileData: ProfileData): Promise<ethers.TransactionResponse> {
@@ -67,6 +71,75 @@ export class DatingAppContract {
       return tokenId.toString();
     } catch (error) {
       console.error('Error getting user token ID:', error);
+      throw error;
+    }
+  }
+
+  // Token-related functions
+  async getLikeTokenBalance(address: string): Promise<string> {
+    try {
+      const balance = await this.likeTokenContract.balanceOf(address);
+      const decimals = await this.likeTokenContract.decimals();
+      return ethers.formatUnits(balance, decimals);
+    } catch (error) {
+      console.error('Error getting like token balance:', error);
+      throw error;
+    }
+  }
+
+  async getSuperLikeTokenBalance(address: string): Promise<string> {
+    try {
+      const balance = await this.superLikeTokenContract.balanceOf(address);
+      const decimals = await this.superLikeTokenContract.decimals();
+      return ethers.formatUnits(balance, decimals);
+    } catch (error) {
+      console.error('Error getting super like token balance:', error);
+      throw error;
+    }
+  }
+
+  async approveLikeTokens(amount: string = "1000000"): Promise<ethers.TransactionResponse> {
+    try {
+      const decimals = await this.likeTokenContract.decimals();
+      const amountInWei = ethers.parseUnits(amount, decimals);
+      const tx = await this.likeTokenContract.approve(contractAddress, amountInWei);
+      return tx;
+    } catch (error) {
+      console.error('Error approving like tokens:', error);
+      throw error;
+    }
+  }
+
+  async approveSuperLikeTokens(amount: string = "1000000"): Promise<ethers.TransactionResponse> {
+    try {
+      const decimals = await this.superLikeTokenContract.decimals();
+      const amountInWei = ethers.parseUnits(amount, decimals);
+      const tx = await this.superLikeTokenContract.approve(contractAddress, amountInWei);
+      return tx;
+    } catch (error) {
+      console.error('Error approving super like tokens:', error);
+      throw error;
+    }
+  }
+
+  async checkLikeTokenAllowance(userAddress: string): Promise<string> {
+    try {
+      const allowance = await this.likeTokenContract.allowance(userAddress, contractAddress);
+      const decimals = await this.likeTokenContract.decimals();
+      return ethers.formatUnits(allowance, decimals);
+    } catch (error) {
+      console.error('Error checking like token allowance:', error);
+      throw error;
+    }
+  }
+
+  async checkSuperLikeTokenAllowance(userAddress: string): Promise<string> {
+    try {
+      const allowance = await this.superLikeTokenContract.allowance(userAddress, contractAddress);
+      const decimals = await this.superLikeTokenContract.decimals();
+      return ethers.formatUnits(allowance, decimals);
+    } catch (error) {
+      console.error('Error checking super like token allowance:', error);
       throw error;
     }
   }

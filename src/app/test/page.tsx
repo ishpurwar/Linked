@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useWeb3 } from '@/lib/Web3Provider';
 import { createDatingAppContract } from '@/lib/web3';
+import { contractAddress, likeTokenAddress, superLikeTokenAddress } from '@/lib/constants';
 
 export default function TestPage() {
   const { signer, isConnected, connectWallet } = useWeb3();
@@ -85,6 +86,37 @@ export default function TestPage() {
     }
   ];
 
+  const tokenFunctions = [
+    {
+      name: 'getLikeTokenBalance',
+      label: 'Get Like Token Balance',
+      description: 'Check your Like token balance',
+      action: () => contract.getLikeTokenBalance(currentAddress),
+      color: 'bg-pink-500 hover:bg-pink-600'
+    },
+    {
+      name: 'getSuperLikeTokenBalance',
+      label: 'Get Super Like Token Balance',
+      description: 'Check your Super Like token balance',
+      action: () => contract.getSuperLikeTokenBalance(currentAddress),
+      color: 'bg-purple-500 hover:bg-purple-600'
+    },
+    {
+      name: 'approveLikeTokens',
+      label: 'Approve Like Tokens',
+      description: 'Approve contract to spend your Like tokens',
+      action: () => contract.approveLikeTokens(),
+      color: 'bg-blue-500 hover:bg-blue-600'
+    },
+    {
+      name: 'approveSuperLikeTokens',
+      label: 'Approve Super Like Tokens',
+      description: 'Approve contract to spend your Super Like tokens',
+      action: () => contract.approveSuperLikeTokens(),
+      color: 'bg-indigo-500 hover:bg-indigo-600'
+    }
+  ];
+
   const formatResult = (result: any) => {
     if (Array.isArray(result)) {
       return result.length === 0 
@@ -145,6 +177,26 @@ export default function TestPage() {
           ))}
         </div>
 
+        {/* Token Functions Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-center">Token Functions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {tokenFunctions.map((tokenFunc) => (
+              <div key={tokenFunc.name} className="bg-gray-800 rounded-lg p-4">
+                <h4 className="text-lg font-semibold mb-2">{tokenFunc.label}</h4>
+                <p className="text-gray-400 text-xs mb-3">{tokenFunc.description}</p>
+                <button
+                  onClick={() => handleTest(tokenFunc.name, tokenFunc.action)}
+                  disabled={loading[tokenFunc.name]}
+                  className={`w-full ${tokenFunc.color} text-white font-bold py-2 px-3 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {loading[tokenFunc.name] ? 'Loading...' : 'Test'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Results Section */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold">Test Results</h2>
@@ -186,14 +238,51 @@ export default function TestPage() {
         </div>
 
         {/* Instructions */}
+        {/* Instructions */}
         <div className="mt-8 bg-gray-800 rounded-lg p-6">
           <h3 className="text-xl font-semibold mb-4">How to Test</h3>
           <div className="space-y-2 text-gray-300">
             <p>1. Make sure you have created a profile first</p>
-            <p>2. To test likes and matches, you need other users to interact with</p>
-            <p>3. Use the main app to like/super like other users</p>
-            <p>4. Come back here to test if the functions return the correct data</p>
-            <p>5. Each button tests a specific smart contract function</p>
+            <p>2. Check your token balances using the token functions above</p>
+            <p>3. If you don't have tokens, create a profile to get 100 free tokens</p>
+            <p>4. Approve tokens before liking/super liking other users</p>
+            <p>5. To test likes and matches, you need other users to interact with</p>
+            <p>6. Use the main app to like/super like other users</p>
+            <p>7. Come back here to test if the functions return the correct data</p>
+            <p>8. Each button tests a specific smart contract function</p>
+          </div>
+        </div>
+
+        {/* Token Addresses for Reference */}
+        <div className="mt-6 bg-gray-800 rounded-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">Contract Information</h3>
+          <div className="space-y-2 text-sm text-gray-300 font-mono">
+            <p><span className="text-gray-400">Dating Contract:</span> {contractAddress}</p>
+            <p><span className="text-gray-400">Like Token:</span> {likeTokenAddress}</p>
+            <p><span className="text-gray-400">Super Like Token:</span> {superLikeTokenAddress}</p>
+          </div>
+        </div>        {/* How Like System Works */}
+        <div className="mt-8 bg-gray-800 rounded-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">How the Like System Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
+            <div>
+              <h4 className="text-lg font-semibold text-pink-400 mb-2">Regular Likes ❤️</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• Sends 1 LikeToken to the target user</li>
+                <li>• Creates a match if both users like each other</li>
+                <li>• Tracked in incoming/outgoing likes arrays</li>
+                <li>• Can only like each user once</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-yellow-400 mb-2">Super Likes ⭐</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• Sends 1 SuperLikeToken to the target user</li>
+                <li>• Creates a super match if both users super like each other</li>
+                <li>• Tracked separately from regular likes</li>
+                <li>• Shows extra interest in the person</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

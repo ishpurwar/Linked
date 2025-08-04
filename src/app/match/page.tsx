@@ -24,6 +24,25 @@ export default function Match() {
   const [users, setUsers] = useState<UserCard[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
+  const [superLikeLoading, setSuperLikeLoading] = useState<Record<string, boolean>>({});
+  const [likeTokenBalance, setLikeTokenBalance] = useState<string>('0');
+  const [superLikeTokenBalance, setSuperLikeTokenBalance] = useState<string>('0');
+
+  const fetchTokenBalances = async () => {
+    if (!signer || !account) return;
+
+    try {
+      const contract = createDatingAppContract(signer);
+      const likeBalance = await contract.getLikeTokenBalance(account);
+      const superLikeBalance = await contract.getSuperLikeTokenBalance(account);
+      
+      setLikeTokenBalance(likeBalance);
+      setSuperLikeTokenBalance(superLikeBalance);
+    } catch (error) {
+      console.error('Error fetching token balances:', error);
+    }
+  };
 
   const fetchAllUsers = async () => {
     if (!signer) return;
@@ -75,17 +94,138 @@ export default function Match() {
   useEffect(() => {
     if (isConnected && signer) {
       fetchAllUsers();
+      fetchTokenBalances();
     }
   }, [isConnected, signer, account]);
 
-  const handleLike = (userAddress: string) => {
-    // Placeholder function - will be implemented later
-    console.log('Like clicked for:', userAddress);
+  const handleLike = async (userAddress: string) => {
+    if (!signer || !account) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setLikeLoading(prev => ({ ...prev, [userAddress]: true }));
+    
+    try {
+      const contract = createDatingAppContract(signer);
+      
+      // Check if user has enough tokens and allowance
+      const balance = await contract.getLikeTokenBalance(account);
+      const allowance = await contract.checkLikeTokenAllowance(account);
+      
+      console.log('Like token balance:', balance);
+      console.log('Like token allowance:', allowance);
+      
+      if (parseFloat(balance) < 1) {
+        alert('Insufficient Like tokens! You need to get more tokens first.');
+        return;
+      }
+      
+      // If allowance is less than 1, approve tokens first
+      if (parseFloat(allowance) < 1) {
+        alert('Approving tokens for spending...');
+        const approveTx = await contract.approveLikeTokens();
+        console.log('Approval transaction submitted:', approveTx.hash);
+        await approveTx.wait();
+        console.log('Tokens approved successfully!');
+      }
+      
+      // Now send the like
+      const tx = await contract.likeUser(userAddress);
+      
+      // Show transaction hash to user
+      console.log('Like transaction submitted:', tx.hash);
+      
+      // Wait for confirmation
+      await tx.wait();
+      
+      // Refresh token balances
+      await fetchTokenBalances();
+      
+      alert('Like sent successfully! 💕');
+    } catch (error: any) {
+      console.error('Error liking user:', error);
+      
+      // Handle specific error messages
+      if (error.message?.includes('Already liked this user')) {
+        alert('You have already liked this user!');
+      } else if (error.message?.includes('insufficient funds')) {
+        alert('Insufficient tokens to send a like');
+      } else if (error.message?.includes('Create your profile first')) {
+        alert('Please create your profile first');
+      } else if (error.message?.includes('ERC20InsufficientAllowance')) {
+        alert('Token approval failed. Please try again.');
+      } else {
+        alert('Failed to send like. Please try again.');
+      }
+    } finally {
+      setLikeLoading(prev => ({ ...prev, [userAddress]: false }));
+    }
   };
 
-  const handleSuperLike = (userAddress: string) => {
-    // Placeholder function - will be implemented later
-    console.log('Super Like clicked for:', userAddress);
+  const handleSuperLike = async (userAddress: string) => {
+    if (!signer || !account) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setSuperLikeLoading(prev => ({ ...prev, [userAddress]: true }));
+    
+    try {
+      const contract = createDatingAppContract(signer);
+      
+      // Check if user has enough tokens and allowance
+      const balance = await contract.getSuperLikeTokenBalance(account);
+      const allowance = await contract.checkSuperLikeTokenAllowance(account);
+      
+      console.log('Super like token balance:', balance);
+      console.log('Super like token allowance:', allowance);
+      
+      if (parseFloat(balance) < 1) {
+        alert('Insufficient Super Like tokens! You need to get more tokens first.');
+        return;
+      }
+      
+      // If allowance is less than 1, approve tokens first
+      if (parseFloat(allowance) < 1) {
+        alert('Approving tokens for spending...');
+        const approveTx = await contract.approveSuperLikeTokens();
+        console.log('Approval transaction submitted:', approveTx.hash);
+        await approveTx.wait();
+        console.log('Tokens approved successfully!');
+      }
+      
+      // Now send the super like
+      const tx = await contract.superLikeUser(userAddress);
+      
+      // Show transaction hash to user
+      console.log('Super like transaction submitted:', tx.hash);
+      
+      // Wait for confirmation
+      await tx.wait();
+      
+      // Refresh token balances
+      await fetchTokenBalances();
+      
+      alert('Super like sent successfully! ⭐💕');
+    } catch (error: any) {
+      console.error('Error super liking user:', error);
+      
+      // Handle specific error messages
+      if (error.message?.includes('Already super liked this user')) {
+        alert('You have already super liked this user!');
+      } else if (error.message?.includes('insufficient funds')) {
+        alert('Insufficient tokens to send a super like');
+      } else if (error.message?.includes('Create your profile first')) {
+        alert('Please create your profile first');
+      } else if (error.message?.includes('ERC20InsufficientAllowance')) {
+        alert('Token approval failed. Please try again.');
+      } else {
+        alert('Failed to send super like. Please try again.');
+      }
+    } finally {
+      setSuperLikeLoading(prev => ({ ...prev, [userAddress]: false }));
+    }
   };
 
   if (!isConnected) {
@@ -117,6 +257,27 @@ export default function Match() {
           <p className="text-gray-600">
             Browse profiles and find your perfect match
           </p>
+        </div>
+
+        {/* Token Balance Display */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6 max-w-md mx-auto">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">Your Token Balance</h3>
+          <div className="flex justify-between items-center space-x-4">
+            <div className="flex-1 text-center">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-2xl">💕</span>
+                <span className="text-sm text-gray-600">Like Tokens</span>
+              </div>
+              <p className="text-xl font-bold text-pink-600">{parseFloat(likeTokenBalance).toFixed(1)}</p>
+            </div>
+            <div className="flex-1 text-center">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-2xl">⭐</span>
+                <span className="text-sm text-gray-600">Super Like Tokens</span>
+              </div>
+              <p className="text-xl font-bold text-purple-600">{parseFloat(superLikeTokenBalance).toFixed(1)}</p>
+            </div>
+          </div>
         </div>
 
         {isLoading && (
@@ -216,17 +377,37 @@ export default function Match() {
                 <div className="flex space-x-3">
                   <button
                     onClick={() => handleLike(user.address)}
-                    className="flex-1 bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center space-x-2"
+                    disabled={likeLoading[user.address] || superLikeLoading[user.address]}
+                    className="flex-1 bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>❤️</span>
-                    <span>Like</span>
+                    {likeLoading[user.address] ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>❤️</span>
+                        <span>Like</span>
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={() => handleSuperLike(user.address)}
-                    className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-2 px-4 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-colors flex items-center justify-center space-x-2"
+                    disabled={likeLoading[user.address] || superLikeLoading[user.address]}
+                    className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-2 px-4 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>⭐</span>
-                    <span>Super</span>
+                    {superLikeLoading[user.address] ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>⭐</span>
+                        <span>Super</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
