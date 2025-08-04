@@ -212,23 +212,7 @@ export default function CreateProfile() {
               <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
-
-          {txHash && (
-            <div className="glass border border-green-500/50 rounded-lg p-4 animate-slide-up">
-              <p className="text-green-400 text-sm">
-                Transaction submitted:
-                <a
-                  href={`https://etherscan.io/tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline ml-1 hover:text-green-300 transition-colors"
-                >
-                  View on Etherscan
-                </a>
-              </p>
-            </div>
-          )}
-
+    
           <button
             type="submit"
             disabled={isLoading}

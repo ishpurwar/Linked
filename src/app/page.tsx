@@ -2,12 +2,19 @@
 
 import Link from "next/link";
 import { useWeb3 } from "../lib/Web3Provider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { checkUserExists } from "../lib/supabase";
+import { createDatingAppContract } from "@/lib/web3";
+
 import ChatBox from "../components/ChatBox";
+
 export default function Home() {
-  const { account, isConnected, connectWallet } = useWeb3();
+  const { signer, account, isConnected, connectWallet } = useWeb3();
   const [userExists, setUserExists] = useState(false);
+  const [contract, setContract] = useState<any>(null);
+  const [results, setResults] = useState<Record<string, string[] | string>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [currentAddress, setCurrentAddress] = useState<string>("");
 
   // Chat states
   const [showChat, setShowChat] = useState(false);
@@ -31,6 +38,15 @@ export default function Home() {
       checkExists(account);
     }
   }, [account]);
+  useEffect(() => {
+    if (signer) {
+      setContract(createDatingAppContract(signer));
+      // Get current user address
+      signer.getAddress().then(setCurrentAddress);
+    }
+  }, [signer]);
+
+ 
 
   // Function to start chat
   const startChat = (address: string) => {
@@ -63,14 +79,13 @@ export default function Home() {
         <div className="text-center mb-16 animate-fade-in">
           <div className="text-8xl mb-6 animate-float">💕</div>
           <h1 className="text-6xl font-bold gradient-text mb-6 animate-slide-up">
-            Welcome to Linked
+            Get Linked
           </h1>
           <p
             className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto animate-slide-up"
             style={{ animationDelay: "0.2s" }}
           >
-            The future of dating is here. Connect, discover, and find your
-            perfect match on the blockchain.
+            A dating platform where your likes are tokens you spend and earn.
           </p>
 
           {!isConnected ? (
@@ -119,46 +134,20 @@ export default function Home() {
                   </Link>
                 )}
                 {userExists && (
-                  <>
-                    <Link
-                      href="/match"
-                      className="glass text-white border-2 border-purple-500/50 px-8 py-4 rounded-xl text-xl font-semibold hover:border-purple-400 hover:bg-purple-600/20 transition-all duration-300 card-hover group"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="group-hover:scale-110 transition-transform">
-                          💝
-                        </span>
-                        Discover Matches
+                  <Link
+                    href="/match"
+                    className="glass text-white border-2 border-purple-500/50 px-8 py-4 rounded-xl text-xl font-semibold hover:border-purple-400 hover:bg-purple-600/20 transition-all duration-300 card-hover group"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="group-hover:scale-110 transition-transform">
+                        💝
                       </span>
-                    </Link>
-                    <Link
-                      href="/dashboard"
-                      className="btn-purple text-white px-8 py-4 rounded-xl text-xl font-semibold group"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="group-hover:scale-110 transition-transform">
-                          📊
-                        </span>
-                        Your Dashboard
-                      </span>
-                    </Link>
-               
-                  </>
+                      Discover Matches
+                    </span>
+                  </Link>
                 )}
               </div>
-              <div className="text-center">
-                <Link
-                  href="/chat"
-                  className="inline-flex items-center gap-2 glass-purple text-purple-300 px-8 py-4 rounded-lg text-xl hover:text-white transition-colors duration-300 group"
-                >
-                      <span className="flex items-center gap-2">
-                        <span className="group-hover:scale-110 transition-transform">
-                          💬
-                        </span>
-                        Chat Room
-                      </span>
-                </Link>
-              </div>
+              
 
               {/* Feature cards */}
               <div className="grid md:grid-cols-3 gap-6 mt-12 max-w-4xl mx-auto">
@@ -192,13 +181,13 @@ export default function Home() {
                   className="glass-purple p-6 rounded-2xl card-hover animate-slide-up"
                   style={{ animationDelay: "1s" }}
                 >
-                  <div className="text-3xl mb-3">🔒</div>
+                  <div className="text-3xl mb-3">🎁</div>
                   <h3 className="text-lg font-semibold text-white mb-2">
-                    Privacy First
+                    100  Like & SuperLike Tokens
                   </h3>
                   <p className="text-gray-300 text-sm">
-                    Your data stays on-chain, encrypted and secure. No central
-                    authority.
+                    100 free Like & SuperLike tokens to kickstart your
+                    connections.
                   </p>
                 </div>
               </div>
@@ -206,15 +195,14 @@ export default function Home() {
           )}
         </div>
 
-        {/* Matching Feature Section - Inspired by design */}
+        {/* Matching Feature Section */}
         <div className="max-w-6xl mx-auto mb-20 animate-fade-in">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold gradient-text mb-4">
-              Smart Matching Algorithm
+              Let's get linked
             </h2>
             <p className="text-gray-300 text-lg">
-              The app helps in finding individuals with similar interests,
-              facilitated by a compatibility percentage feature.
+              Leverage on-chain profiles and token-based interactions to forge genuine connections based on shared interests and real engagement.
             </p>
           </div>
 
@@ -300,67 +288,11 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right side - Features */}
-            <div className="space-y-6">
-              <div className="text-center lg:text-left">
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  Our aim was to foster a sense of effortless and engaging
-                  connection between like-minded individuals.
-                </h3>
-              </div>
-
-              <div className="grid gap-4">
-                <div
-                  className="glass p-4 rounded-xl animate-slide-up"
-                  style={{ animationDelay: "0.6s" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎯</span>
-                    <div>
-                      <h4 className="text-white font-semibold">
-                        Precision Matching
-                      </h4>
-                      <p className="text-gray-300 text-sm">
-                        Advanced algorithm analyzes interests and compatibility
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="glass p-4 rounded-xl animate-slide-up"
-                  style={{ animationDelay: "0.8s" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📊</span>
-                    <div>
-                      <h4 className="text-white font-semibold">
-                        Compatibility Score
-                      </h4>
-                      <p className="text-gray-300 text-sm">
-                        Real-time percentage based on shared interests
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="glass p-4 rounded-xl animate-slide-up"
-                  style={{ animationDelay: "1s" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">⚡</span>
-                    <div>
-                      <h4 className="text-white font-semibold">
-                        Instant Connections
-                      </h4>
-                      <p className="text-gray-300 text-sm">
-                        Connect immediately when interests align
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Right side - Description */}
+            <div className="text-center lg:text-left">
+              <p className="text-pink-500 text-3xl font-extrabold">
+                Leverage on-chain profiles and token-based interactions to forge genuine connections based on shared interests and real engagement.
+              </p>
             </div>
           </div>
         </div>
@@ -368,12 +300,11 @@ export default function Home() {
         {/* Problems Section - Chat Style */}
         <div className="max-w-4xl mx-auto mb-20 animate-fade-in">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold gradient-text mb-4">
+            <h2 className="text-5xl font-extrabold text-pink-500 mb-4">
               Solving Dating App Problems
             </h2>
-            <p className="text-gray-300 text-lg">
-              Traditional dating apps have issues. We&apos;re building the
-              solution.
+            <p className="text-pink-300 text-xl">
+              Traditional dating apps have issues. We&apos;re building the solution.
             </p>
           </div>
 
@@ -388,8 +319,7 @@ export default function Home() {
               </div>
               <div className="bg-purple-600 text-white p-4 rounded-2xl rounded-tl-sm max-w-md">
                 <p className="font-medium">
-                  Dating app users often struggle to find a match who genuinely
-                  shares their interests.
+                  Users spam likes carelessly, leading to meaningless matches and overwhelming genuine users with fake interest.
                 </p>
               </div>
             </div>
@@ -401,8 +331,7 @@ export default function Home() {
             >
               <div className="bg-lime-400 text-black p-4 rounded-2xl rounded-tr-sm max-w-md">
                 <p className="font-medium">
-                  Our blockchain-based matching uses verified interests and
-                  compatibility algorithms for genuine connections.
+                  Tokenized likes require users to spend tokens for each like, making interactions more thoughtful and genuine while preventing spam.
                 </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center flex-shrink-0">
@@ -420,8 +349,7 @@ export default function Home() {
               </div>
               <div className="bg-purple-600 text-white p-4 rounded-2xl rounded-tl-sm max-w-md">
                 <p className="font-medium">
-                  Some users may end up with no matches or likes at all,
-                  damaging their self-esteem.
+                  Scammers and bots infest dating apps, making it difficult to connect with genuine people.
                 </p>
               </div>
             </div>
@@ -433,8 +361,7 @@ export default function Home() {
             >
               <div className="bg-lime-400 text-black p-4 rounded-2xl rounded-tr-sm max-w-md">
                 <p className="font-medium">
-                  Token rewards and NFT profiles ensure every user has value and
-                  opportunities to connect.
+                  Blockchain verification and wallet connections ensure all users are real and accountable.
                 </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center flex-shrink-0">
@@ -452,8 +379,7 @@ export default function Home() {
               </div>
               <div className="bg-purple-600 text-white p-4 rounded-2xl rounded-tl-sm max-w-md">
                 <p className="font-medium">
-                  Scammers and bots infest dating apps, making it difficult to
-                  connect with genuine people.
+                  Users lose interest quickly when matches don't value their likes, creating a throwaway mentality.
                 </p>
               </div>
             </div>
@@ -465,8 +391,67 @@ export default function Home() {
             >
               <div className="bg-lime-400 text-black p-4 rounded-2xl rounded-tr-sm max-w-md">
                 <p className="font-medium">
-                  Blockchain verification and wallet connections ensure all
-                  users are real and accountable.
+                  When likes cost tokens, every interaction has real value. Users appreciate and respond more to meaningful gestures.
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-sm">💜</span>
+              </div>
+            </div>
+
+            {/* Problem Bubble 4 */}
+            <div
+              className="flex items-start gap-4 animate-slide-up"
+              style={{ animationDelay: "1.4s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-sm">👤</span>
+              </div>
+              <div className="bg-purple-600 text-white p-4 rounded-2xl rounded-tl-sm max-w-md">
+                <p className="font-medium">
+                  Traditional apps have unlimited likes, making it impossible to gauge genuine interest from casual browsing.
+                </p>
+              </div>
+            </div>
+
+            {/* Solution Bubble 4 */}
+            <div
+              className="flex items-start gap-4 justify-end animate-slide-up"
+              style={{ animationDelay: "1.6s" }}
+            >
+              <div className="bg-lime-400 text-black p-4 rounded-2xl rounded-tr-sm max-w-md">
+                <p className="font-medium">
+                  Limited token supply creates scarcity. Users save their tokens for profiles they're truly interested in, creating authentic connections.
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-sm">💜</span>
+              </div>
+            </div>
+
+            {/* Problem Bubble 5 */}
+            <div
+              className="flex items-start gap-4 animate-slide-up"
+              style={{ animationDelay: "1.8s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-sm">👤</span>
+              </div>
+              <div className="bg-purple-600 text-white p-4 rounded-2xl rounded-tl-sm max-w-md">
+                <p className="font-medium">
+                  Premium features are locked behind paywalls, creating unfair advantages for wealthy users.
+                </p>
+              </div>
+            </div>
+
+            {/* Solution Bubble 7 */}
+            <div
+              className="flex items-start gap-4 justify-end animate-slide-up"
+              style={{ animationDelay: "2s" }}
+            >
+              <div className="bg-lime-400 text-black p-4 rounded-2xl rounded-tr-sm max-w-md">
+                <p className="font-medium">
+                  Earn tokens through genuine interactions and profile engagement. Active users can access premium features without spending money.
                 </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center flex-shrink-0">
@@ -475,49 +460,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        {/* Match Celebration Section */}
-        {!userExists && (
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="glass-purple p-12 rounded-3xl">
-              <div className="mb-8">
-                <div className="inline-flex items-center justify-center w-32 h-32 bg-lime-400 rounded-3xl mb-6 animate-bounce">
-                  <span className="text-4xl font-bold text-black">
-                    It&apos;s a match!
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex justify-center gap-8 mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center animate-pulse">
-                  <span className="text-3xl">👨</span>
-                </div>
-                <div
-                  className="w-24 h-24 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center animate-pulse"
-                  style={{ animationDelay: "0.5s" }}
-                >
-                  <span className="text-3xl">👩</span>
-                </div>
-              </div>
-
-              <p className="text-white text-xl font-semibold mb-4">
-                You and Jessica liked each other.
-              </p>
-
-              <p className="text-purple-300 mb-8">
-                Start your blockchain-powered love story today!
-              </p>
-
-              {isConnected && (
-                <Link
-                  href="/createprofile"
-                  className="btn-purple text-white px-8 py-4 rounded-xl text-lg font-semibold inline-block"
-                >
-                  Create Your Profile Now
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Chat Component */}

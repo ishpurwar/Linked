@@ -1088,10 +1088,10 @@ export const contractAbi = [
 		"type": "function"
 	}
 ];
-export const contractAddress = "0x535afa31B4FC65520332284fdD410b8677a1CF7a"; 
+export const contractAddress = "0xBD82E97b14dBc96492b004e90D57abfCc22B3a4d"; 
 
-export const likeTokenAddress = "0x3FBBeC573516389c3E1d0fDB7Bce81CD281F3fD1"; // sample Like Token
-export const superLikeTokenAddress = "0x218efE4A937523D8F2f9A18B0174A64d14d2Be15"; // sample USDC
+export const likeTokenAddress = "0x291dC9C4cD8Ac23614d25125BA107d66020b360e"; // sample Like Token
+export const superLikeTokenAddress = "0xb34eb8C9964c9c429c6c10BA28B3D16a54E99420"; // sample USDC
 
 // ERC-20 Token ABI (minimal for approve, transfer, and balance functions)
 export const erc20Abi = [
