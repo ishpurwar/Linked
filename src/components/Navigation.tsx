@@ -3,18 +3,37 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useWeb3 } from "../lib/Web3Provider";
-
+import { useEffect ,useState} from "react";
+import { checkUserExists } from "../lib/supabase"; 
 export default function Navigation() {
   const pathname = usePathname();
   const { account, isConnected, connectWallet, disconnectWallet } = useWeb3();
-
+const [userExists, setUserExists] = useState(false);
   const navItems = [
     { href: "/", label: "Home", icon: "🏠" },
     { href: "/createprofile", label: "Create Profile", icon: "👤" },
     { href: "/match", label: "Discover", icon: "💝" },
     { href: "/test", label: "Test Functions", icon: "🧪" },
   ];
+  useEffect(() => {
+    const checkExists = async (account:any) => {
+      if (account) {
+        try {
+          const user = await checkUserExists(account);
+          setUserExists(!!user);
+        } catch (error) {
+          console.error("Error checking user existence:", error);
+          setUserExists(false);
+        }
+      } else {
+        setUserExists(false);
+      }
+    };
 
+    checkExists(account);
+  }, [account]);
+
+// console.log("User exists:", userExists);
   return (
     <nav className="glass border-b border-purple-500/20 sticky top-0 z-50 animate-fade-in">
       <div className="max-w-7xl mx-auto px-4">
@@ -40,7 +59,15 @@ export default function Navigation() {
                   pathname === item.href
                     ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/25"
                     : "text-gray-300 hover:text-white hover:bg-purple-600/20 hover:shadow-lg hover:shadow-purple-500/10"
+                } ${
+                  (item.href === "/createprofile" && userExists) || 
+                  (item.href === "/match" && !userExists) || 
+                  (item.href !== "/test" && item.href !== "/" && 
+                   item.href !== "/createprofile" && item.href !== "/match")
+                    ? "hidden"
+                    : ""
                 }`}
+                    
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <span className="group-hover:scale-110 transition-transform duration-200">

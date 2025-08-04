@@ -2,10 +2,28 @@
 
 import Link from "next/link";
 import { useWeb3 } from "../lib/Web3Provider";
-
+import { useEffect, useState } from "react";
+import { checkUserExists } from "../lib/supabase";
 export default function Home() {
-  const { isConnected, connectWallet } = useWeb3();
+  const { account,isConnected, connectWallet } = useWeb3();
+  const [userExists, setUserExists] = useState(false);
+  useEffect(() => {
+    const checkExists = async (account:any) => {
+      if (account) {
+        try {
+          const user = await checkUserExists(account);
+          setUserExists(!!user);
+        } catch (error) {
+          console.error("Error checking user existence:", error);
+          setUserExists(false);
+        }
+      } else {
+        setUserExists(false);
+      }
+    };
 
+    checkExists(account);
+  }, [account]);
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Animated background elements */}
@@ -68,7 +86,7 @@ export default function Home() {
               style={{ animationDelay: "0.4s" }}
             >
               <div className="flex gap-6 items-center justify-center flex-col sm:flex-row">
-                <Link
+             {!userExists &&  <Link
                   href="/createprofile"
                   className="btn-purple text-white px-8 py-4 rounded-xl text-xl font-semibold group"
                 >
@@ -78,8 +96,8 @@ export default function Home() {
                     </span>
                     Create Your Profile
                   </span>
-                </Link>
-                <Link
+                </Link>}
+               {userExists&& <Link
                   href="/match"
                   className="glass text-white border-2 border-purple-500/50 px-8 py-4 rounded-xl text-xl font-semibold hover:border-purple-400 hover:bg-purple-600/20 transition-all duration-300 card-hover group"
                 >
@@ -89,7 +107,7 @@ export default function Home() {
                     </span>
                     Discover Matches
                   </span>
-                </Link>
+                </Link>}
               </div>
               <div className="text-center">
                 <Link

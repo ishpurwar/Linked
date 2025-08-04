@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useWeb3 } from "../../lib/Web3Provider";
 import { createDatingAppContract, ProfileData } from "../../lib/web3";
 import MultiImageUpload from "../../components/MultiImageUpload";
+import { createUser } from "@/lib/supabase";
 
 export default function CreateProfile() {
   const { signer, account, isConnected, connectWallet } = useWeb3();
@@ -59,7 +60,12 @@ export default function CreateProfile() {
       await tx.wait();
 
       alert("Profile created successfully!");
-
+      await createUser({
+        Blk_Id: account?.toLowerCase() || "",
+        wallet_address: account?.toLowerCase() || "",
+        profile_id: tx.hash,
+        profile_name: formData.name,
+      });
       // Reset form
       setFormData({
         name: "",
