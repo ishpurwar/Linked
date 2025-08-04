@@ -12,7 +12,7 @@ export default function Dashboard() {
   const { signer, account, isConnected, connectWallet } = useWeb3();
   const [userExists, setUserExists] = useState(false);
   const [contract, setContract] = useState<any>(null);
-  const [results, setResults] = useState<Record<string, string[] | string>>({});
+  const [results, setResults] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [currentAddress, setCurrentAddress] = useState<string>("");
 
@@ -308,7 +308,7 @@ export default function Dashboard() {
   const handleTest = useCallback(
     async (
       testName: string,
-      testFunction: () => Promise<string[] | string>
+      testFunction: () => Promise<any>
     ) => {
       if (!contract) {
         return;

@@ -19,6 +19,52 @@ export interface User {
   created_at?: string;
 }
 
+// Profile interface for smart contract data
+export interface ProfileData {
+  name: string;
+  age: string;
+  interests: string;
+  uri: string[];
+  owner: string;
+}
+
+// Transaction result interface
+export interface TransactionResult {
+  hash: string;
+  wait(): Promise<TransactionReceipt>;
+}
+
+export interface TransactionReceipt {
+  status: number;
+  blockNumber: number;
+  transactionHash: string;
+}
+
+// User card interface for dashboard
+export interface UserCard {
+  address: string;
+  profile: ProfileData | null;
+  tokenId: number | null;
+}
+
+// Contract interface to replace 'any' types
+export interface DatingAppContract {
+  getMutualMatches(): Promise<string[]>;
+  getMutualSuperMatches(): Promise<string[]>;
+  getUserTokenId(address: string): Promise<bigint>;
+  getProfileByTokenId(tokenId: number): Promise<ProfileData>;
+  likeUser(address: string): Promise<TransactionResult>;
+  superLikeUser(address: string): Promise<TransactionResult>;
+  getLikeTokenBalance(address: string): Promise<string>;
+  getSuperLikeTokenBalance(address: string): Promise<string>;
+  checkLikeTokenAllowance(address: string): Promise<string>;
+  checkSuperLikeTokenAllowance(address: string): Promise<string>;
+  approveLikeTokens(): Promise<TransactionResult>;
+  approveSuperLikeTokens(): Promise<TransactionResult>;
+  getAllUsers(): Promise<string[]>;
+  // Add other methods as needed
+}
+
 // Function to check if user exists by wallet address (stored in Blk_Id)
 export async function checkUserExists(
   walletAddress: string

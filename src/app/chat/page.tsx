@@ -12,9 +12,17 @@ import {
 import { createDatingAppContract } from "@/lib/web3";
 import Link from "next/link";
 
+interface ProfileData {
+  name: string;
+  age: string;
+  interests: string;
+  uri: string[];
+  owner: string;
+}
+
 interface Contact {
   address: string;
-  profile: any;
+  profile: ProfileData | null;
   tokenId: number | null;
   type: "match" | "super_match";
   lastMessage?: {
@@ -27,7 +35,9 @@ interface Contact {
 export default function ChatPage() {
   const { signer, account, isConnected, connectWallet } = useWeb3();
   const [userExists, setUserExists] = useState(false);
-  const [contract, setContract] = useState<any>(null);
+  const [contract, setContract] = useState<ReturnType<
+    typeof createDatingAppContract
+  > | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -174,26 +184,6 @@ export default function ChatPage() {
 
     return profileName.includes(search) || address.includes(search);
   });
-
-  // Format time ago
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    console.log(date)
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInMinutes < 1) return "Just now";
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInDays < 7) return `${diffInDays}d ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   if (!isConnected) {
     return (

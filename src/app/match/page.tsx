@@ -419,7 +419,7 @@ export default function Match() {
                   {/* Profile Image */}
                   <div className="h-[600px] overflow-hidden relative">
                     {getCurrentUser()?.profile?.uri &&
-                    getCurrentUser()?.profile?.uri.length > 0 ? (
+                    (getCurrentUser()?.profile?.uri.length as number) > 0 ? (
                       <ImageCarousel
                         images={getCurrentUser()?.profile?.uri || []}
                         alt={getCurrentUser()?.profile?.name || "Profile"}
