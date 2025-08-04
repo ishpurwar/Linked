@@ -17,7 +17,6 @@ interface Contact {
   profile: any;
   tokenId: number | null;
   type: "match" | "super_match";
-  unreadCount?: number;
   lastMessage?: {
     text: string;
     timestamp: Date;
@@ -84,10 +83,12 @@ export default function ChatPage() {
                 profile,
                 tokenId: Number(tokenId),
                 type: "match",
-                unreadCount: Math.floor(Math.random() * 5), // Mock unread count
                 lastMessage: {
                   text: "Hey! How are you doing?",
-                  timestamp: new Date(Date.now() - Math.random() * 86400000),
+                  timestamp: new Date(
+                    Date.now() -
+                      Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)
+                  ), // Random time within last 7 days
                   from: userAddress,
                 },
               });
@@ -101,7 +102,6 @@ export default function ChatPage() {
                 profile: null,
                 tokenId: null,
                 type: "match",
-                unreadCount: 0,
               });
             }
           }
@@ -122,10 +122,12 @@ export default function ChatPage() {
                 profile,
                 tokenId: Number(tokenId),
                 type: "super_match",
-                unreadCount: Math.floor(Math.random() * 3), // Mock unread count
                 lastMessage: {
                   text: "Super match! ✨",
-                  timestamp: new Date(Date.now() - Math.random() * 43200000),
+                  timestamp: new Date(
+                    Date.now() -
+                      Math.floor(Math.random() * 3 * 24 * 60 * 60 * 1000)
+                  ), // Random time within last 3 days
                   from: userAddress,
                 },
               });
@@ -139,7 +141,6 @@ export default function ChatPage() {
                 profile: null,
                 tokenId: null,
                 type: "super_match",
-                unreadCount: 0,
               });
             }
           }
@@ -174,24 +175,24 @@ export default function ChatPage() {
     return profileName.includes(search) || address.includes(search);
   });
 
-  // Get total unread count
-  const totalUnreadCount = contacts.reduce(
-    (sum, contact) => sum + (contact.unreadCount || 0),
-    0
-  );
-
   // Format time ago
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
+    console.log(date)
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-    if (diffInHours < 1) return "Just now";
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}d ago`;
-    return date.toLocaleDateString();
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   if (!isConnected) {
@@ -261,37 +262,45 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Romantic background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-800/20 rounded-full blur-3xl animate-pulse-slow"
+          style={{ animationDelay: "1.5s" }}
+        ></div>
+        <div
+          className="absolute top-3/4 left-1/3 w-48 h-48 bg-pink-500/10 rounded-full blur-2xl animate-pulse-slow"
+          style={{ animationDelay: "3s" }}
+        ></div>
+      </div>
+
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      <div className="relative z-10 glass-purple border-b border-purple-500/30 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h1 className="text-2xl font-bold gradient-text flex items-center gap-2">
               💬 Chat Room
             </h1>
-            {totalUnreadCount > 0 && (
-              <div className="bg-purple-600 text-white text-sm px-2 py-1 rounded-full">
-                {totalUnreadCount} unread
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="relative z-10 flex h-[calc(100vh-80px)]">
         {/* Contacts Sidebar */}
-        <div className="w-1/3 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <div className="w-1/3 glass-purple border-r border-purple-500/30 flex flex-col backdrop-blur-xl">
           {/* Search Bar */}
-          <div className="p-4 border-b border-gray-700">
+          <div className="p-4 border-b border-purple-500/30">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search contacts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full glass border border-purple-500/30 text-white placeholder-gray-400 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-sm"
               />
-              <div className="absolute left-3 top-2.5 text-gray-400">🔍</div>
+              <div className="absolute left-3 top-2.5 text-purple-300">🔍</div>
             </div>
           </div>
 
@@ -299,37 +308,42 @@ export default function ChatPage() {
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-                <span className="ml-3 text-gray-300">Loading contacts...</span>
+                <div className="glass-purple p-4 rounded-xl animate-scale-in">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                    <span className="text-gray-300">Loading contacts...</span>
+                  </div>
+                </div>
               </div>
             ) : filteredContacts.length === 0 ? (
               <div className="text-center py-8">
-                <div className="text-4xl mb-4">💔</div>
-                <p className="text-gray-400">
-                  {searchTerm
-                    ? "No contacts found"
-                    : "No matches to chat with yet"}
-                </p>
-                {!searchTerm && (
-                  <Link
-                    href="/match"
-                    className="inline-block mt-4 text-purple-400 hover:text-purple-300 transition-colors"
-                  >
-                    Find your first match →
-                  </Link>
-                )}
+                <div className="glass-purple p-6 rounded-xl mx-4 animate-scale-in">
+                  <div className="text-4xl mb-4 animate-float">💔</div>
+                  <p className="text-gray-300 mb-2">
+                    {searchTerm
+                      ? "No contacts found"
+                      : "No matches to chat with yet"}
+                  </p>
+                  {!searchTerm && (
+                    <Link
+                      href="/match"
+                      className="inline-block mt-4 text-purple-400 hover:text-purple-300 transition-colors animate-glow"
+                    >
+                      Find your first match →
+                    </Link>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="space-y-1">
                 {filteredContacts.map((contact, index) => (
-                    
                   <div
                     key={`${contact.address}-${index}`}
                     onClick={() => setSelectedContact(contact)}
-                    className={`p-4 cursor-pointer transition-colors hover:bg-gray-700 ${
+                    className={`p-4 m-2 rounded-xl cursor-pointer transition-all duration-300 hover:glass hover:border-purple-400/50 card-hover ${
                       selectedContact?.address === contact.address
-                        ? "bg-gray-700"
-                        : ""
+                        ? "glass border border-purple-500/50 shadow-lg shadow-purple-500/20"
+                        : "hover:bg-purple-500/10"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -342,7 +356,7 @@ export default function ChatPage() {
                           </span>
                         </div>
                         {/* Match Type Badge */}
-                        <div className="absolute -top-1 -right-1">
+                        {/* <div className="absolute -top-1 -right-1">
                           {contact.type === "super_match" ? (
                             <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-xs">
                               ⭐
@@ -352,7 +366,7 @@ export default function ChatPage() {
                               💕
                             </div>
                           )}
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* Contact Info */}
@@ -362,23 +376,18 @@ export default function ChatPage() {
                             {contact.profile?.name ||
                               `User ${contact.address.slice(-4)}`}
                           </h3>
-                          {contact.unreadCount && contact.unreadCount > 0 && (
-                            <div className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
-                              {contact.unreadCount}
-                            </div>
-                          )}
                         </div>
 
-                        <p className="text-gray-400 text-sm truncate">
+                        {/* <p className="text-gray-400 text-sm truncate mb-1">
                           {contact.lastMessage?.text ||
                             "Start a conversation..."}
                         </p>
 
                         {contact.lastMessage && (
-                          <p className="text-gray-500 text-xs mt-1">
+                          <p className="text-purple-400 text-xs font-medium">
                             {formatTimeAgo(contact.lastMessage.timestamp)}
                           </p>
-                        )}
+                        )} */}
                       </div>
                     </div>
                   </div>
@@ -389,13 +398,13 @@ export default function ChatPage() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col glass backdrop-blur-xl">
           {selectedContact ? (
             <>
               {/* Chat Header */}
-              <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+              <div className="glass-purple border-b border-purple-500/30 px-6 py-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/25">
                     <span className="text-white font-bold">
                       {selectedContact.profile?.name?.[0]?.toUpperCase() ||
                         selectedContact.address.slice(2, 4).toUpperCase()}
@@ -406,25 +415,12 @@ export default function ChatPage() {
                       {selectedContact.profile?.name ||
                         `User ${selectedContact.address.slice(-4)}`}
                     </h2>
-                    {/* <p className="text-gray-400 text-sm flex items-center gap-2">
-                      {selectedContact.type === "super_match" ? (
-                        <>
-                          <span>⭐</span>
-                          Super Match
-                        </>
-                      ) : (
-                        <>
-                          <span>💕</span>
-                          Mutual Match
-                        </>
-                      )}
-                    </p> */}
                   </div>
                 </div>
               </div>
 
               {/* Chat Messages */}
-              <div className="flex-1 bg-gray-900 flex flex-col">
+              <div className="flex-1 bg-black/20 backdrop-blur-sm flex flex-col">
                 {account && (
                   <EmbeddedChat
                     currentUserAddress={account}
@@ -435,19 +431,19 @@ export default function ChatPage() {
             </>
           ) : (
             /* No Chat Selected */
-            <div className="flex-1 flex items-center justify-center bg-gray-900">
-              <div className="text-center">
-                <div className="text-6xl mb-6">💬</div>
-                <h2 className="text-2xl font-bold text-white mb-4">
+            <div className="flex-1 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+              <div className="text-center glass-purple p-8 rounded-2xl max-w-md mx-4 animate-scale-in">
+                <div className="text-6xl mb-6 animate-float">💬</div>
+                <h2 className="text-2xl font-bold gradient-text mb-4">
                   Select a contact to start chatting
                 </h2>
-                <p className="text-gray-400 mb-8">
+                <p className="text-gray-300 mb-8">
                   Choose someone from your matches to begin a conversation
                 </p>
                 {contacts.length === 0 && !loading && (
                   <Link
                     href="/match"
-                    className="btn-purple px-6 py-3 rounded-lg font-semibold inline-block"
+                    className="btn-purple px-6 py-3 rounded-lg font-semibold inline-block animate-glow"
                   >
                     🔍 Find Matches
                   </Link>
@@ -561,15 +557,19 @@ function EmbeddedChat({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {isLoadingMessages ? (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-            <span className="ml-3 text-gray-300">Loading messages...</span>
+            <div className="glass-purple p-6 rounded-2xl animate-scale-in">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                <span className="text-gray-300">Loading messages...</span>
+              </div>
+            </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="text-4xl mb-2">💬</div>
-              <p className="text-gray-300">No messages yet</p>
-              <p className="text-gray-400 text-sm">Start the conversation!</p>
+            <div className="text-center glass-purple p-8 rounded-2xl animate-scale-in">
+              <div className="text-4xl mb-2 animate-float">💬</div>
+              <p className="text-gray-300 mb-2">No messages yet</p>
+              <p className="text-purple-300 text-sm">Start the conversation!</p>
             </div>
           </div>
         ) : (
@@ -586,10 +586,10 @@ function EmbeddedChat({
                   }`}
                 >
                   <div
-                    className={`max-w-[70%] p-3 rounded-2xl ${
+                    className={`max-w-[70%] p-3 rounded-2xl backdrop-blur-sm ${
                       isCurrentUser
-                        ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-br-sm"
-                        : "bg-gray-700 text-white rounded-bl-sm"
+                        ? "bg-gradient-to-r from-purple-600/80 to-purple-700/80 text-white rounded-br-sm shadow-lg shadow-purple-500/20 border border-purple-400/30"
+                        : "glass border border-purple-500/20 text-white rounded-bl-sm"
                     }`}
                   >
                     <p className="text-sm">{message.message}</p>
@@ -612,20 +612,20 @@ function EmbeddedChat({
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-700 p-4">
+      <div className="border-t border-purple-500/30 p-4 glass backdrop-blur-sm">
         <form onSubmit={handleSendMessage} className="flex gap-3">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 bg-gray-800 text-white px-4 py-3 rounded-full border border-gray-600 focus:border-purple-500 focus:outline-none placeholder-gray-400"
+            className="flex-1 glass border border-purple-500/30 text-white px-4 py-3 rounded-full focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 placeholder-gray-400 backdrop-blur-sm"
             disabled={isSending}
           />
           <button
             type="submit"
             disabled={!newMessage.trim() || isSending}
-            className="w-12 h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105"
+            className="w-12 h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 shadow-lg shadow-purple-500/25 animate-glow"
           >
             {isSending ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
