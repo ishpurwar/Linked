@@ -11,6 +11,8 @@ import {
   superLikeTokenAddress,
 } from "@/lib/constants";
 import ChatBox from "../components/ChatBox";
+import ImageCarousel from "@/components/ImageCarousel";
+import ProfileCard from "@/components/ProfileCard";
 export default function Home() {
   const { signer, account, isConnected, connectWallet } = useWeb3();
   const [userExists, setUserExists] = useState(false);
@@ -55,20 +57,245 @@ export default function Home() {
       if (!contract || !userExists) return;
 
       const functions = [
-        { name: "getMutualMatches", fn: () => contract.getMutualMatches() },
-        { name: "getOutgoingLikes", fn: () => contract.getOutgoingLikes() },
-        { name: "getIncomingLikes", fn: () => contract.getIncomingLikes() },
+        {
+          name: "getMutualMatches",
+          fn: async () => {
+            // Call actual contract function
+            const result = await (contract as any).getMutualMatches();
+            if (!result) {
+              return [];
+            }
+
+            // Process the result array and fetch profile data for each match
+            const processedResult = [];
+            for (const userAddress of result) {
+              try {
+                const tokenId = await (contract as any).getUserTokenId(
+                  userAddress
+                );
+                const profile = await (contract as any).getProfileByTokenId(
+                  Number(tokenId)
+                );
+                processedResult.push({
+                  address: userAddress,
+                  profile,
+                  tokenId: Number(tokenId),
+                });
+              } catch (error) {
+                console.error(
+                  `Error fetching profile for ${userAddress}:`,
+                  error
+                );
+                // Still include the address even if profile fetch fails
+                processedResult.push({
+                  address: userAddress,
+                  profile: null,
+                  tokenId: null,
+                });
+              }
+            }
+            return processedResult || [];
+          },
+        },
+        {
+          name: "getOutgoingLikes",
+          fn: async () => {
+            // Call actual contract function
+            const result = await (contract as any).getOutgoingLikes();
+            if (!result) {
+              return [];
+            }
+
+            // Process the result array and fetch profile data for each match
+            const processedResult = [];
+            for (const userAddress of result) {
+              try {
+                const tokenId = await (contract as any).getUserTokenId(
+                  userAddress
+                );
+                const profile = await (contract as any).getProfileByTokenId(
+                  Number(tokenId)
+                );
+                processedResult.push({
+                  address: userAddress,
+                  profile,
+                  tokenId: Number(tokenId),
+                });
+              } catch (error) {
+                console.error(
+                  `Error fetching profile for ${userAddress}:`,
+                  error
+                );
+                // Still include the address even if profile fetch fails
+                processedResult.push({
+                  address: userAddress,
+                  profile: null,
+                  tokenId: null,
+                });
+              }
+            }
+            return processedResult || [];
+          },
+        },
+        {
+          name: "getIncomingLikes",
+          fn: async () => {
+            // Call actual contract function
+            const result = await (contract as any).getIncomingLikes();
+            if (!result) {
+              return [];
+            }
+
+            // Process the result array and fetch profile data for each match
+            const processedResult = [];
+            for (const userAddress of result) {
+              try {
+                const tokenId = await (contract as any).getUserTokenId(
+                  userAddress
+                );
+                const profile = await (contract as any).getProfileByTokenId(
+                  Number(tokenId)
+                );
+                processedResult.push({
+                  address: userAddress,
+                  profile,
+                  tokenId: Number(tokenId),
+                });
+              } catch (error) {
+                console.error(
+                  `Error fetching profile for ${userAddress}:`,
+                  error
+                );
+                // Still include the address even if profile fetch fails
+                processedResult.push({
+                  address: userAddress,
+                  profile: null,
+                  tokenId: null,
+                });
+              }
+            }
+            return processedResult || [];
+          },
+        },
         {
           name: "getIncomingSuperLikes",
-          fn: () => contract.getIncomingSuperLikes(),
+          fn: async () => {
+            // Call actual contract function
+            const result = await (contract as any).getIncomingSuperLikes();
+            if (!result) {
+              return [];
+            }
+
+            // Process the result array and fetch profile data for each match
+            const processedResult = [];
+            for (const userAddress of result) {
+              try {
+                const tokenId = await (contract as any).getUserTokenId(
+                  userAddress
+                );
+                const profile = await (contract as any).getProfileByTokenId(
+                  Number(tokenId)
+                );
+                processedResult.push({
+                  address: userAddress,
+                  profile,
+                  tokenId: Number(tokenId),
+                });
+              } catch (error) {
+                console.error(
+                  `Error fetching profile for ${userAddress}:`,
+                  error
+                );
+                // Still include the address even if profile fetch fails
+                processedResult.push({
+                  address: userAddress,
+                  profile: null,
+                  tokenId: null,
+                });
+              }
+            }
+            return processedResult || [];
+          },
         },
         {
           name: "getOutgoingSuperLikes",
-          fn: () => contract.getOutgoingSuperLikes(),
+          fn: async () => {
+            // Call actual contract function
+            const result = await (contract as any).getOutgoingSuperLikes();
+            if (!result) {
+              return [];
+            }
+
+            // Process the result array and fetch profile data for each match
+            const processedResult = [];
+            for (const userAddress of result) {
+              try {
+                const tokenId = await (contract as any).getUserTokenId(
+                  userAddress
+                );
+                const profile = await (contract as any).getProfileByTokenId(
+                  Number(tokenId)
+                );
+                processedResult.push({
+                  address: userAddress,
+                  profile,
+                  tokenId: Number(tokenId),
+                });
+              } catch (error) {
+                console.error(
+                  `Error fetching profile for ${userAddress}:`,
+                  error
+                );
+                // Still include the address even if profile fetch fails
+                processedResult.push({
+                  address: userAddress,
+                  profile: null,
+                  tokenId: null,
+                });
+              }
+            }
+            return processedResult || [];
+          },
         },
         {
           name: "getMutualSuperMatches",
-          fn: () => contract.getMutualSuperMatches(),
+          fn: async () => {
+            // Call actual contract function
+            const result = await (contract as any).getMutualSuperMatches();
+            if (!result) {
+              return [];
+            }
+
+            // Process the result array and fetch profile data for each match
+            const processedResult = [];
+            for (const userAddress of result) {
+              try {
+                const tokenId = await (contract as any).getUserTokenId(
+                  userAddress
+                );
+                const profile = await (contract as any).getProfileByTokenId(
+                  Number(tokenId)
+                );
+                processedResult.push({
+                  address: userAddress,
+                  profile,
+                  tokenId: Number(tokenId),
+                });
+              } catch (error) {
+                console.error(
+                  `Error fetching profile for ${userAddress}:`,
+                  error
+                );
+                // Still include the address even if profile fetch fails
+                processedResult.push({
+                  address: userAddress,
+                  profile: null,
+                  tokenId: null,
+                });
+              }
+            }
+            return processedResult || [];
+          },
         },
       ];
 
@@ -548,417 +775,421 @@ export default function Home() {
               </p>
 
               {/* Main Grid Layout */}
-              <div className="grid gap-8 lg:grid-cols-2">
+              <div className="flex flex-col gap-10 ">
                 {/* LEFT COLUMN - Matches & Incoming */}
-                <div className="space-y-8">
-                  {/* Mutual Matches */}
-                  <div className="glass p-6 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      💕 Mutual Matches
-                    </h3>
 
-                    {loading.getMutualMatches ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-                        <span className="ml-3 text-gray-300">
-                          Loading mutual matches...
-                        </span>
-                      </div>
-                    ) : results.getMutualMatches &&
-                      Array.isArray(results.getMutualMatches) &&
-                      results.getMutualMatches.length > 0 ? (
-                      <div className="space-y-3">
-                        {(results.getMutualMatches as string[]).map(
-                          (matchAddress: string, index: number) => (
-                            <div
+                {/* Mutual Matches */}
+                <div className="glass p-6 rounded-2xl">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    💕 Mutual Matches
+                  </h3>
+
+                  {loading.getMutualMatches ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                      <span className="ml-3 text-gray-300">
+                        Loading mutual matches...
+                      </span>
+                    </div>
+                  ) : results.getMutualMatches &&
+                    Array.isArray(results.getMutualMatches) &&
+                    results.getMutualMatches.length > 0 ? (
+                    <div className="space-y-3">
+                     
+                      
+                      {(results.getMutualMatches as any[]).map(
+                        (incomingSuperLike: any, index: number) => {
+                          const address =
+                            typeof incomingSuperLike === "string"
+                              ? incomingSuperLike
+                              : incomingSuperLike.address;
+                          const profile =
+                            typeof incomingSuperLike === "object"
+                              ? incomingSuperLike.profile
+                              : null;
+
+                          return (
+                            <ProfileCard
                               key={index}
-                              className="glass p-3 rounded-xl flex items-center justify-between"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                  <span className="text-sm">💕</span>
+                              address={address}
+                              profile={profile}
+                              index={index}
+                              variant="outgoing"
+                              statusLabel="YOU SUPER LIKED"
+                              chat={true}
+                              badge={
+                                <div className="px-2 py-1 bg-red-500/80 text-white text-xs rounded-full">
+                                   Match You
                                 </div>
-                                <div>
-                                  <p className="text-white font-semibold text-sm">
-                                    Match #{index + 1}
-                                  </p>
-                                  <p className="text-gray-300 text-xs font-mono">
-                                    {matchAddress.slice(0, 6)}...
-                                    {matchAddress.slice(-4)}
-                                  </p>
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => startChat(matchAddress)}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-1 rounded-lg text-sm"
-                              >
-                                💬 Chat
-                              </button>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">💔</div>
-                        <p className="text-gray-300 text-sm">
-                          No mutual matches yet.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                              }
+                            />
+                          );
+                        }
+                      )}
 
-                  {/* Mutual Super Matches */}
-                  <div className="glass p-6 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      ✨ Mutual Super Matches
-                    </h3>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-2xl mb-2">💔</div>
+                      <p className="text-gray-300 text-sm">
+                        No mutual matches yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                    {loading.getMutualSuperMatches ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
-                        <span className="ml-3 text-gray-300">
-                          Loading super matches...
-                        </span>
-                      </div>
-                    ) : results.getMutualSuperMatches &&
-                      Array.isArray(results.getMutualSuperMatches) &&
-                      results.getMutualSuperMatches.length > 0 ? (
-                      <div className="space-y-3">
-                        {(results.getMutualSuperMatches as string[]).map(
-                          (matchAddress: string, index: number) => (
-                            <div
+                {/* Mutual Super Matches */}
+                <div className="glass p-6 rounded-2xl">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    ✨ Mutual Super Matches
+                  </h3>
+
+                  {loading.getMutualSuperMatches ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                      <span className="ml-3 text-gray-300">
+                        Loading super matches...
+                      </span>
+                    </div>
+                  ) : results.getMutualSuperMatches &&
+                    Array.isArray(results.getMutualSuperMatches) &&
+                    results.getMutualSuperMatches.length > 0 ? (
+                    <div className="space-y-3">
+                      {(results.getMutualSuperMatches as any[]).map(
+                        (incomingSuperLike: any, index: number) => {
+                          const address =
+                            typeof incomingSuperLike === "string"
+                              ? incomingSuperLike
+                              : incomingSuperLike.address;
+                          const profile =
+                            typeof incomingSuperLike === "object"
+                              ? incomingSuperLike.profile
+                              : null;
+
+                          return (
+                            <ProfileCard
                               key={index}
-                              className="glass p-3 rounded-xl flex items-center justify-between border border-red-500/30"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                                  <span className="text-sm">✨</span>
+                              address={address}
+                              profile={profile}
+                              index={index}
+                              variant="outgoing"
+                              statusLabel="YOU SUPER LIKED"
+                              chat={true}
+                              badge={
+                                <div className="px-2 py-1 bg-yellow-500/80 text-white text-xs rounded-full">
+                                  Super Match You
                                 </div>
-                                <div>
-                                  <p className="text-white font-semibold text-sm">
-                                    Super Match #{index + 1}
-                                  </p>
-                                  <p className="text-gray-300 text-xs font-mono">
-                                    {matchAddress.slice(0, 6)}...
-                                    {matchAddress.slice(-4)}
-                                  </p>
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => startChat(matchAddress)}
-                                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-3 py-1 rounded-lg text-sm"
-                              >
-                                💬 Chat
-                              </button>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">⭐</div>
-                        <p className="text-gray-300 text-sm">
-                          No mutual super matches yet.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                              }
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-2xl mb-2">⭐</div>
+                      <p className="text-gray-300 text-sm">
+                        No mutual super matches yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                  {/* Incoming Likes */}
-                  <div className="glass p-6 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      💙 Incoming Likes
-                    </h3>
+                {/* Incoming Likes */}
+                <div className="glass p-6 rounded-2xl">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    💙 Incoming Likes
+                  </h3>
 
-                    {loading.getIncomingLikes ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <span className="ml-3 text-gray-300">
-                          Loading incoming likes...
-                        </span>
-                      </div>
-                    ) : results.getIncomingLikes &&
-                      Array.isArray(results.getIncomingLikes) &&
-                      results.getIncomingLikes.length > 0 ? (
-                      <div className="space-y-3">
-                        {(results.getIncomingLikes as string[]).map(
-                          (likerAddress: string, index: number) => (
-                            <div
+                  {loading.getIncomingLikes ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                      <span className="ml-3 text-gray-300">
+                        Loading incoming likes...
+                      </span>
+                    </div>
+                  ) : results.getIncomingLikes &&
+                    Array.isArray(results.getIncomingLikes) &&
+                    results.getIncomingLikes.length > 0 ? (
+                    <div className="space-y-3">
+                      {(results.getIncomingLikes as any[]).map(
+                        (incomingSuperLike: any, index: number) => {
+                          const address =
+                            typeof incomingSuperLike === "string"
+                              ? incomingSuperLike
+                              : incomingSuperLike.address;
+                          const profile =
+                            typeof incomingSuperLike === "object"
+                              ? incomingSuperLike.profile
+                              : null;
+
+                          return (
+                            <ProfileCard
                               key={index}
-                              className="glass p-3 rounded-xl flex items-center justify-between"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                                  <span className="text-sm">💙</span>
+                              address={address}
+                              profile={profile}
+                              index={index}
+                              variant="outgoing"
+                              statusLabel="YOU SUPER LIKED"
+                              badge={
+                                <div className="px-2 py-1 bg-blue-500/80 text-white text-xs rounded-full">
+                                  Liked You
                                 </div>
-                                <div>
-                                  <p className="text-white font-semibold text-sm">
-                                    Liked You #{index + 1}
-                                  </p>
-                                  <p className="text-gray-300 text-xs font-mono">
-                                    {likerAddress.slice(0, 6)}...
-                                    {likerAddress.slice(-4)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="text-blue-400 text-sm">
-                                💖 Liked you!
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">💌</div>
-                        <p className="text-gray-300 text-sm">
-                          No incoming likes yet.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                              }
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-2xl mb-2">💌</div>
+                      <p className="text-gray-300 text-sm">
+                        No incoming likes yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                  {/* Incoming Super Likes */}
-                  <div className="glass p-6 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      💖 Incoming Super Likes
-                    </h3>
+                {/* Incoming Super Likes */}
+                <div className="glass p-6 rounded-2xl">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    💖 Incoming Super Likes
+                  </h3>
 
-                    {loading.getIncomingSuperLikes ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
-                        <span className="ml-3 text-gray-300">
-                          Loading super likes...
-                        </span>
-                      </div>
-                    ) : results.getIncomingSuperLikes &&
-                      Array.isArray(results.getIncomingSuperLikes) &&
-                      results.getIncomingSuperLikes.length > 0 ? (
-                      <div className="space-y-3">
-                        {(results.getIncomingSuperLikes as string[]).map(
-                          (superLikerAddress: string, index: number) => (
-                            <div
+                  {loading.getIncomingSuperLikes ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                      <span className="ml-3 text-gray-300">
+                        Loading super likes...
+                      </span>
+                    </div>
+                  ) : results.getIncomingSuperLikes &&
+                    Array.isArray(results.getIncomingSuperLikes) &&
+                    results.getIncomingSuperLikes.length > 0 ? (
+                    <div className="space-y-3">
+                      {(results.getIncomingSuperLikes as any[]).map(
+                        (incomingSuperLike: any, index: number) => {
+                          const address =
+                            typeof incomingSuperLike === "string"
+                              ? incomingSuperLike
+                              : incomingSuperLike.address;
+                          const profile =
+                            typeof incomingSuperLike === "object"
+                              ? incomingSuperLike.profile
+                              : null;
+
+                          return (
+                            <ProfileCard
                               key={index}
-                              className="glass p-3 rounded-xl flex items-center justify-between border border-pink-500/30"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-                                  <span className="text-sm">💖</span>
+                              address={address}
+                              profile={profile}
+                              index={index}
+                              variant="outgoing"
+                              statusLabel="YOU SUPER LIKED"
+                              badge={
+                                <div className="px-2 py-1 bg-pink-500/80 text-white text-xs rounded-full">
+                                  Super Liked You
                                 </div>
-                                <div>
-                                  <p className="text-white font-semibold text-sm">
-                                    Super Liked You #{index + 1}
-                                  </p>
-                                  <p className="text-gray-300 text-xs font-mono">
-                                    {superLikerAddress.slice(0, 6)}...
-                                    {superLikerAddress.slice(-4)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="text-pink-400 text-sm">
-                                ⭐ Super liked you!
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">🌟</div>
-                        <p className="text-gray-300 text-sm">
-                          No incoming super likes yet.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                              }
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-2xl mb-2">🌟</div>
+                      <p className="text-gray-300 text-sm">
+                        No incoming super likes yet.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* RIGHT COLUMN - Outgoing */}
-                <div className="space-y-8">
-                  {/* Outgoing Likes */}
-                  <div className="glass p-6 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      💚 Your Likes
-                    </h3>
 
-                    {loading.getOutgoingLikes ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                        <span className="ml-3 text-gray-300">
-                          Loading your likes...
-                        </span>
-                      </div>
-                    ) : results.getOutgoingLikes &&
-                      Array.isArray(results.getOutgoingLikes) &&
-                      results.getOutgoingLikes.length > 0 ? (
-                      <div className="space-y-3">
-                        {(results.getOutgoingLikes as string[]).map(
-                          (likedAddress: string, index: number) => (
-                            <div
+                {/* Outgoing Likes */}
+                <div className="glass p-6 rounded-2xl">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    💚 Your Likes
+                  </h3>
+
+                  {loading.getOutgoingLikes ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                      <span className="ml-3 text-gray-300">
+                        Loading your likes...
+                      </span>
+                    </div>
+                  ) : results.getOutgoingLikes &&
+                    Array.isArray(results.getOutgoingLikes) &&
+                    results.getOutgoingLikes.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {results.getOutgoingLikes.map(
+                        (outgoingLike: any, index: number) => {
+                          const address =
+                            typeof outgoingLike === "string"
+                              ? outgoingLike
+                              : outgoingLike.address;
+                          const profile =
+                            typeof outgoingLike === "object"
+                              ? outgoingLike.profile
+                              : null;
+
+                          return (
+                            <ProfileCard
                               key={index}
-                              className="glass p-3 rounded-xl flex items-center justify-between"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                                  <span className="text-sm">💚</span>
+                              address={address}
+                              profile={profile}
+                              index={index}
+                              variant="outgoing"
+                              statusLabel="YOU LIKED"
+                              badge={
+                                <div className="px-2 py-1 bg-green-500/80 text-white text-xs rounded-full">
+                                  Liked
                                 </div>
-                                <div>
-                                  <p className="text-white font-semibold text-sm">
-                                    Liked #{index + 1}
-                                  </p>
-                                  <p className="text-gray-300 text-xs font-mono">
-                                    {likedAddress.slice(0, 6)}...
-                                    {likedAddress.slice(-4)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="text-yellow-400 text-sm">
-                                ⏳ Waiting
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">💭</div>
-                        <p className="text-gray-300 text-sm">
-                          No outgoing likes yet.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                              }
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-2xl mb-2">💭</div>
+                      <p className="text-gray-300 text-sm">
+                        No outgoing likes yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                  {/* Outgoing Super Likes */}
-                  <div className="glass p-6 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      ⭐ Your Super Likes
-                    </h3>
+                {/* Outgoing Super Likes */}
+                <div className="glass p-6 rounded-2xl">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    ⭐ Your Super Likes
+                  </h3>
 
-                    {loading.getOutgoingSuperLikes ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                        <span className="ml-3 text-gray-300">
-                          Loading super likes...
-                        </span>
-                      </div>
-                    ) : results.getOutgoingSuperLikes &&
-                      Array.isArray(results.getOutgoingSuperLikes) &&
-                      results.getOutgoingSuperLikes.length > 0 ? (
-                      <div className="space-y-3">
-                        {(results.getOutgoingSuperLikes as string[]).map(
-                          (superLikedAddress: string, index: number) => (
-                            <div
+                  {loading.getOutgoingSuperLikes ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                      <span className="ml-3 text-gray-300">
+                        Loading super likes...
+                      </span>
+                    </div>
+                  ) : results.getOutgoingSuperLikes &&
+                    Array.isArray(results.getOutgoingSuperLikes) &&
+                    results.getOutgoingSuperLikes.length > 0 ? (
+                    <div className="space-y-3">
+                      {(results.getOutgoingSuperLikes as any[]).map(
+                        (outgoingLike: any, index: number) => {
+                          const address =
+                            typeof outgoingLike === "string"
+                              ? outgoingLike
+                              : outgoingLike.address;
+                          const profile =
+                            typeof outgoingLike === "object"
+                              ? outgoingLike.profile
+                              : null;
+
+                          return (
+                            <ProfileCard
                               key={index}
-                              className="glass p-3 rounded-xl flex items-center justify-between border border-yellow-500/30"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
-                                  <span className="text-sm">⭐</span>
+                              address={address}
+                              profile={profile}
+                              index={index}
+                              variant="outgoing"
+                              statusLabel="YOU SUPER LIKED"
+                              badge={
+                                <div className="px-2 py-1 bg-yellow-500/80 text-white text-xs rounded-full">
+                                  Super Liked
                                 </div>
-                                <div>
-                                  <p className="text-white font-semibold text-sm">
-                                    Super Liked #{index + 1}
-                                  </p>
-                                  <p className="text-gray-300 text-xs font-mono">
-                                    {superLikedAddress.slice(0, 6)}...
-                                    {superLikedAddress.slice(-4)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="text-yellow-400 text-sm">
-                                ⏳ Waiting
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">🌟</div>
-                        <p className="text-gray-300 text-sm">
-                          No outgoing super likes yet.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                              }
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-2xl mb-2">🌟</div>
+                      <p className="text-gray-300 text-sm">
+                        No outgoing super likes yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                  {/* Quick Stats Card */}
-                  <div className="glass p-6 rounded-2xl border border-purple-500/30">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      📊 Your Stats
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">💕</div>
-                        <p className="text-white font-semibold text-sm">
-                          {results.getMutualMatches &&
-                          Array.isArray(results.getMutualMatches)
-                            ? (results.getMutualMatches as string[]).length
-                            : 0}
-                        </p>
-                        <p className="text-gray-400 text-xs">Matches</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">✨</div>
-                        <p className="text-white font-semibold text-sm">
-                          {results.getMutualSuperMatches &&
-                          Array.isArray(results.getMutualSuperMatches)
-                            ? (results.getMutualSuperMatches as string[]).length
-                            : 0}
-                        </p>
-                        <p className="text-gray-400 text-xs">Super Matches</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">💙</div>
-                        <p className="text-white font-semibold text-sm">
-                          {results.getIncomingLikes &&
-                          Array.isArray(results.getIncomingLikes)
-                            ? (results.getIncomingLikes as string[]).length
-                            : 0}
-                        </p>
-                        <p className="text-gray-400 text-xs">Liked You</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">💚</div>
-                        <p className="text-white font-semibold text-sm">
-                          {results.getOutgoingLikes &&
-                          Array.isArray(results.getOutgoingLikes)
-                            ? (results.getOutgoingLikes as string[]).length
-                            : 0}
-                        </p>
-                        <p className="text-gray-400 text-xs">Your Likes</p>
-                      </div>
+                {/* Quick Stats Card */}
+                <div className="glass p-6 rounded-2xl border border-purple-500/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    📊 Your Stats
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">💕</div>
+                      <p className="text-white font-semibold text-sm">
+                        {results.getMutualMatches &&
+                        Array.isArray(results.getMutualMatches)
+                          ? (results.getMutualMatches as string[]).length
+                          : 0}
+                      </p>
+                      <p className="text-gray-400 text-xs">Matches</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">✨</div>
+                      <p className="text-white font-semibold text-sm">
+                        {results.getMutualSuperMatches &&
+                        Array.isArray(results.getMutualSuperMatches)
+                          ? (results.getMutualSuperMatches as string[]).length
+                          : 0}
+                      </p>
+                      <p className="text-gray-400 text-xs">Super Matches</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">💙</div>
+                      <p className="text-white font-semibold text-sm">
+                        {results.getIncomingLikes &&
+                        Array.isArray(results.getIncomingLikes)
+                          ? (results.getIncomingLikes as string[]).length
+                          : 0}
+                      </p>
+                      <p className="text-gray-400 text-xs">Liked You</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">💚</div>
+                      <p className="text-white font-semibold text-sm">
+                        {results.getOutgoingLikes &&
+                        Array.isArray(results.getOutgoingLikes)
+                          ? (results.getOutgoingLikes as string[]).length
+                          : 0}
+                      </p>
+                      <p className="text-gray-400 text-xs">Your Likes</p>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Quick Actions Footer */}
-              <div className="mt-12 text-center space-y-4">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Quick Actions
-                </h3>
-                <div className="flex flex-wrap gap-4 justify-center">
-                  <Link
-                    href="/match"
-                    className="btn-purple px-6 py-3 rounded-lg font-semibold"
-                  >
-                    🔍 Discover More People
-                  </Link>
-                  <Link
-                    href="/createprofile"
-                    className="glass border border-purple-500/50 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600/20 transition-all"
-                  >
-                    ✏️ Edit Profile
-                  </Link>
-                </div>
+            {/* Quick Actions Footer */}
+            <div className="mt-12 text-center space-y-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Quick Actions
+              </h3>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Link
+                  href="/match"
+                  className="btn-purple px-6 py-3 rounded-lg font-semibold"
+                >
+                  🔍 Discover More People
+                </Link>
+               
               </div>
             </div>
           </div>
         )}
-        {/* Match Celebration Section */}
+        {/* Match Celebration Section */}{!userExists && (
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
           <div className="glass-purple p-12 rounded-3xl">
             <div className="mb-8">
@@ -998,8 +1229,7 @@ export default function Home() {
               </Link>
             )}
           </div>
-        </div>
-
+        </div>)}
         {/* Demo Chat Section - For testing with your two addresses */}
         {isConnected && account && (
           <div className="max-w-4xl mx-auto mb-20 animate-fade-in">
